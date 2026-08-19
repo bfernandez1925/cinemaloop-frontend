@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# archivos generados automáticamente por `next dev`, no forman parte del código fuente del proyecto
+/CLAUDE.md
+/AGENTS.md
