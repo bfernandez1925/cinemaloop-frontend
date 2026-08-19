@@ -43,3 +43,29 @@ next-env.d.ts
 # archivos generados automáticamente por `next dev`, no forman parte del código fuente del proyecto
 /CLAUDE.md
 /AGENTS.md
+
+# testing e2e (Playwright)
+/test-results/
+/playwright-report/
+/playwright/.cache/
+/blob-report/
+
+# editores e IDEs
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+
+# sistema operativo
+Thumbs.db
+Desktop.ini
+.directory
+
+# logs
+*.log
+logs/
+
+# archivos locales de configuración de herramientas que no deben compartirse
+*.local
