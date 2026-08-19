@@ -10,8 +10,7 @@ Las especificaciones funcionales completas (mecánica de juego, modelo de datos,
 - Tailwind CSS.
 - Firebase Authentication (SDK de cliente) para login/registro.
 - ESLint + Prettier.
-
-El resto de herramientas (Vitest, React Testing Library, Playwright) se incorporan en un paso de configuración posterior; ver el backlog del proyecto en Linear.
+- Vitest + React Testing Library (tests de componente) y Playwright (e2e).
 
 ## Estructura
 
@@ -22,6 +21,9 @@ design/
   handoff/        referencia de diseño entregada (no se modifica, solo se lee)
   tokens.ts       tokens de diseño extraídos del handoff (pendiente de generar)
 public/           assets estáticos servidos tal cual
+test/
+  unit/           tests de componente (Vitest + React Testing Library)
+e2e/              tests e2e (Playwright), corren contra un build de producción
 ```
 
 ## Requisitos
@@ -50,7 +52,11 @@ npm run lint         # ESLint
 npm run format:check # Prettier, solo verifica
 npm run format       # Prettier, aplica el formato
 npm run typecheck    # tsc --noEmit
+npm test             # Vitest + React Testing Library (componente)
+npm run test:e2e     # Playwright, contra un build de producción levantado automáticamente
 ```
+
+Los navegadores de Playwright se instalan automáticamente en `npm install` (script `postinstall`), sin pasos manuales. `npm run test:e2e` compila la app (`next build`) y la levanta (`next start`) en el puerto 3100 antes de correr los tests, y la para al terminar — no requiere tener el servidor de desarrollo corriendo.
 
 ## Build de producción
 
