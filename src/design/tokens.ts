@@ -133,6 +133,10 @@ export const typography = {
     uppercase: true,
     letterSpacing: "0.04em",
   },
+  // Número dentro de las tarjetas de estadística de fin de partida
+  // (nodos alcanzados, tiempo medio): verificado en la screen "04 · Fin
+  // de partida" — distinto de statNumber (Landing) y badgeNumber (partida).
+  statCardNumber: { mobile: "18px", desktop: "22px", weight: 700, family: "display" },
 } as const;
 
 export const radii = {
@@ -151,6 +155,10 @@ export const radii = {
   // Panel (tarjeta de nodo actual, contenedor de "ya usados"): 20px flat,
   // igual en mobile y desktop — verificado en la screen 03a/03b.
   panel: "20px",
+  // Tarjeta de estadística de fin de partida: 14px flat, distinto del
+  // radio de tarjeta general (16/18px) — verificado en la screen
+  // "04 · Fin de partida".
+  statCard: "14px",
 } as const;
 
 /** Gaps estándar del sistema — ya cubiertos por la escala de espaciado por

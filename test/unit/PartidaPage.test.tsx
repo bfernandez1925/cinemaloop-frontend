@@ -18,6 +18,9 @@ vi.mock("@/lib/auth/AuthProvider", () => ({
 vi.mock("@/lib/game/api", () => ({
   submitAnswer: vi.fn(),
   finishGame: vi.fn(),
+  submitToLeaderboard: vi.fn(),
+  saveGame: vi.fn(),
+  discardGame: vi.fn(),
 }));
 
 vi.mock("@/lib/game/session", () => ({
@@ -125,7 +128,8 @@ describe("PartidaPage", () => {
 
     expect(await screen.findByText("Partida terminada")).toBeInTheDocument();
     expect(screen.getByText("100")).toBeInTheDocument();
-    expect(await screen.findByText("3 nodos alcanzados")).toBeInTheDocument();
+    expect(await screen.findByText("3")).toBeInTheDocument();
+    expect(screen.getByText("Nodos alcanzados")).toBeInTheDocument();
     expect(finishGame).toHaveBeenCalledWith("game-1");
   });
 
