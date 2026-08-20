@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { colors, entityTypeColors, radii } from "@/design/tokens";
+import { colors, entityTypeColors, radii, typography } from "@/design/tokens";
 
 // Tailwind v4 configura su tema en CSS (@theme en globals.css, ver
 // ADR-0006), así que src/design/tokens.ts no puede importarse desde ahí
@@ -39,5 +39,21 @@ describe("sincronía de tokens.ts con el @theme de globals.css", () => {
     expect(cssVar("radius-card-lg")).toBe(radii.cardDesktop);
     expect(cssVar("radius-pill")).toBe(radii.pill);
     expect(cssVar("radius-image")).toBe(radii.image);
+  });
+
+  it.each([
+    ["wordmark", "wordmark"],
+    ["screenTitle", "screen-title"],
+    ["cardTitle", "card-title"],
+    ["scoreHero", "score-hero"],
+  ] as const)("typography.%s (mobile/desktop) coincide con --text-%s(-lg)", (key, cssName) => {
+    const token = typography[key];
+    expect(cssVar(`text-${cssName}`)).toBe(token.mobile);
+    expect(cssVar(`text-${cssName}-lg`)).toBe(token.desktop);
+  });
+
+  it("typography.cardBody (mobile/desktop) coincide con --text-card-body(-lg)", () => {
+    expect(cssVar("text-card-body")).toBe(typography.cardBody.mobile);
+    expect(cssVar("text-card-body-lg")).toBe(typography.cardBody.desktop);
   });
 });

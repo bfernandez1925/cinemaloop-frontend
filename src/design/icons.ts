@@ -2,7 +2,9 @@ import {
   ArrowRight,
   ChevronLeft,
   Clapperboard,
+  Clock,
   History,
+  Infinity as InfinityIcon,
   Link as LinkIcon,
   Mic,
   Save,
@@ -10,6 +12,7 @@ import {
   Trophy,
   User,
   X,
+  Zap,
 } from "lucide-react";
 
 /**
@@ -22,6 +25,11 @@ import {
  * - "Descartar" no lleva icono en el handoff, solo texto.
  * - El anillo de temporizador es un componente SVG custom (CIN-40),
  *   nunca un icono de librería.
+ *
+ * `modeClasico`/`modeContrarreloj`/`modeMaraton` (screen "Selección de
+ * modo", CIN-39) no están en la tabla de spec-design-fidelity.md — son
+ * glifos propios del handoff sin fila dedicada; se eligen los Lucide más
+ * cercanos semánticamente (reloj, rayo, infinito).
  */
 export const ICONS = {
   back: ChevronLeft,
@@ -35,6 +43,9 @@ export const ICONS = {
   arrow: ArrowRight,
   save: Save,
   historial: History,
+  modeClasico: Clock,
+  modeContrarreloj: Zap,
+  modeMaraton: InfinityIcon,
 } as const;
 
 export type IconName = keyof typeof ICONS;

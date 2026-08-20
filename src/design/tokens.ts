@@ -56,13 +56,17 @@ export const typography = {
     // Inter Tight (400-800) — resto de la UI. Pesos cargados en layout.tsx (CIN-38).
     sans: "sans",
   },
-  // Escala observada en el handoff (spec-design-fidelity.md). Los pares
-  // {mobile, desktop} son los dos breakpoints del handoff (390px/1280px);
-  // los pares {min, max} son variación dentro de un mismo breakpoint,
-  // a precisar por componente en la comparación visual de CIN-48.
+  // Escala observada en el handoff (spec-design-fidelity.md), verificada
+  // contra CinemaLoop.dc.html screen por screen a medida que se
+  // implementan (empezando por "02 · Selección de modo" en CIN-39). Los
+  // pares {mobile, desktop} son los dos breakpoints reales del handoff
+  // (390px/1280px); los pares {min, max} son variación observada sin un
+  // breakpoint claro detrás, a precisar según haga falta.
   wordmark: { mobile: "36px", desktop: "52px", weight: 500, family: "display" },
-  h2: { min: "20px", max: "30px", weight: 600, family: "display" },
-  h3: { min: "17px", max: "21px", weight: 600, family: "display" },
+  // H2 de pantalla ("Elige tu modo"...): verificado en la screen 02.
+  screenTitle: { mobile: "22px", desktop: "30px", weight: 600, family: "display" },
+  // H3 de tarjeta (título de cada modo): verificado en la screen 02.
+  cardTitle: { mobile: "17px", desktop: "20px", weight: 600, family: "display" },
   scoreHero: {
     mobile: "46px",
     desktop: "80px",
@@ -71,6 +75,9 @@ export const typography = {
     gradient: "linear-gradient(135deg, #FF5A3C, #7B3CFF)",
   },
   body: { min: "14px", max: "17px", weight: 400, family: "sans" },
+  // Copy secundario dentro de una tarjeta (p. ej. descripción de modo):
+  // verificado en la screen 02, color text-tertiary.
+  cardBody: { mobile: "13px", desktop: "14px", weight: 400, family: "sans" },
   meta: { min: "9.5px", max: "13px", weight: 400, family: "sans" },
   badge: {
     min: "10px",
@@ -83,9 +90,10 @@ export const typography = {
 } as const;
 
 export const radii = {
-  // Tarjeta: 14-20px en mobile, 16-28px en frames desktop (spec).
-  cardMobile: "14px",
-  cardDesktop: "16px",
+  // Tarjeta: 16px mobile / 18px desktop, verificado en la screen 02 de
+  // CinemaLoop.dc.html (dentro del rango 14-20/16-28 que documenta la spec).
+  cardMobile: "16px",
+  cardDesktop: "18px",
   // Pills/badges: la spec exige "completamente redondeado (≥20px)". Se usa
   // un valor mayor que cualquier medio-alto real para garantizar el pill
   // shape independientemente de la altura concreta del componente.
