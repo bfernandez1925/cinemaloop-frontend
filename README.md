@@ -58,6 +58,10 @@ npm run test:e2e     # Playwright, contra un build de producción levantado auto
 
 Los navegadores de Playwright se instalan automáticamente en `npm install` (script `postinstall`), sin pasos manuales. `npm run test:e2e` compila la app (`next build`) y la levanta (`next start`) en el puerto 3100 antes de correr los tests, y la para al terminar — no requiere tener el servidor de desarrollo corriendo.
 
+## CI
+
+GitHub Actions (`.github/workflows/ci.yml`) tiene dos jobs. `test` (lint, typecheck, tests de componente, build) corre en cada push a `main`/`develop` y en cada pull request; un job en rojo bloquea el merge en `develop` (branch protection). `e2e` (Playwright) corre solo en push a `main`/`develop`, no en cada PR, para no alargar la vuelta de cada PR con el tiempo de build+start+navegador. Tiempos de referencia (medidos en la primera ejecución real, CIN-11): `test` ~63 s, `e2e` ~64 s (corren en paralelo, cada uno en su propio job).
+
 ## Build de producción
 
 ```bash
