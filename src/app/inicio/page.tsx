@@ -52,6 +52,7 @@ function InicioContent() {
   }, [pagina]);
 
   const GameIcon = ICONS.gameModes;
+  const RankingIcon = ICONS.ranking;
   // La última página trae menos que PAGE_SIZE entradas (o 0): no hay
   // flag "hasMore" en la respuesta de getUserGames, así que se deriva
   // del tamaño de página fijo del backend (HISTORIAL_PAGE_SIZE).
@@ -81,13 +82,22 @@ function InicioContent() {
         Mis partidas
       </h2>
 
-      <Link
-        href="/modos"
-        className="text-button bg-orange text-bg-primary flex w-fit items-center justify-center gap-2 rounded-control px-7 py-[15px]"
-      >
-        <GameIcon className="h-4 w-4" strokeWidth={2} />
-        Jugar partida nueva
-      </Link>
+      <div className="flex flex-col gap-3 lg:flex-row">
+        <Link
+          href="/modos"
+          className="text-button bg-orange text-bg-primary flex w-fit items-center justify-center gap-2 rounded-control px-7 py-[15px]"
+        >
+          <GameIcon className="h-4 w-4" strokeWidth={2} />
+          Jugar partida nueva
+        </Link>
+        <Link
+          href="/ranking"
+          className="text-button border-border text-text-primary flex w-fit items-center justify-center gap-2 rounded-control border-[1.5px] px-7 py-[15px]"
+        >
+          <RankingIcon className="h-4 w-4" strokeWidth={1.8} />
+          Ver ranking
+        </Link>
+      </div>
 
       <RecordCards profile={profile} />
 
