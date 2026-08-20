@@ -53,6 +53,7 @@ describe("InicioPage", () => {
       "href",
       "/modos",
     );
+    expect(screen.getByRole("link", { name: /Ver ranking/ })).toHaveAttribute("href", "/ranking");
     expect(screen.getByText("4860")).toBeInTheDocument();
     expect(screen.getByText("2860 pts")).toBeInTheDocument();
   });
