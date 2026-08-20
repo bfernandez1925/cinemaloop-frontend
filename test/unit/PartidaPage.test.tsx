@@ -1,10 +1,10 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import type { User } from "firebase/auth";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import PartidaPage from "@/app/partida/page";
 import { finishGame, submitAnswer } from "@/lib/game/api";
 import type { SubmitAnswerResponse } from "@/lib/game/types";
-import { readActiveGameSession } from "@/lib/game/session";
+import { clearActiveGameSession, readActiveGameSession } from "@/lib/game/session";
 
 const replaceMock = vi.fn();
 vi.mock("next/navigation", () => ({
@@ -46,6 +46,7 @@ describe("PartidaPage", () => {
     replaceMock.mockClear();
     vi.mocked(submitAnswer).mockReset();
     vi.mocked(finishGame).mockReset();
+    vi.mocked(clearActiveGameSession).mockReset();
     vi.mocked(readActiveGameSession).mockReturnValue({ gameId: "game-1", nodoActual: actorNode });
   });
 
@@ -143,5 +144,45 @@ describe("PartidaPage", () => {
     // Sigue en la misma partida, no ha terminado.
     expect(screen.queryByText("Partida terminada")).not.toBeInTheDocument();
     expect(screen.getByText("Willem Dafoe")).toBeInTheDocument();
+  });
+
+  describe("retirada voluntaria (CIN-42)", () => {
+    it("pulsar el botón de cerrar pide confirmación antes de terminar", () => {
+      render(<PartidaPage />);
+
+      fireEvent.click(screen.getByRole("button", { name: "Terminar partida" }));
+
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
+      expect(finishGame).not.toHaveBeenCalled();
+    });
+
+    it("cancelar la confirmación no termina la partida", () => {
+      render(<PartidaPage />);
+
+      fireEvent.click(screen.getByRole("button", { name: "Terminar partida" }));
+      fireEvent.click(screen.getByRole("button", { name: "Cancelar" }));
+
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      expect(screen.getByText("Willem Dafoe")).toBeInTheDocument();
+      expect(finishGame).not.toHaveBeenCalled();
+    });
+
+    it("confirmar termina la partida conservando la puntuación acumulada y llama a finishGame", async () => {
+      vi.mocked(finishGame).mockResolvedValue({
+        puntuacion_total: 0,
+        nodos_alcanzados: 1,
+        tiempo_total: 5,
+        tiempo_medio_respuesta: 5,
+      });
+
+      render(<PartidaPage />);
+      fireEvent.click(screen.getByRole("button", { name: "Terminar partida" }));
+      const dialog = screen.getByRole("dialog");
+      fireEvent.click(within(dialog).getByRole("button", { name: "Terminar partida" }));
+
+      expect(await screen.findByText("Partida terminada")).toBeInTheDocument();
+      expect(finishGame).toHaveBeenCalledWith("game-1");
+      expect(clearActiveGameSession).toHaveBeenCalledOnce();
+    });
   });
 });

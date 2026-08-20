@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AnswerForm } from "@/components/AnswerForm";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { DirectionIndicator } from "@/components/DirectionIndicator";
 import { GameBadges } from "@/components/GameBadges";
 import { NodeCard } from "@/components/NodeCard";
@@ -40,6 +41,8 @@ function PartidaContent() {
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [summary, setSummary] = useState<FinishGameResponse | null>(null);
+  const [confirmingQuit, setConfirmingQuit] = useState(false);
+  const [quitting, setQuitting] = useState(false);
   const timedOutRef = useRef(false);
 
   useEffect(() => {
@@ -98,6 +101,14 @@ function PartidaContent() {
     [gameId, currentNode, phase, remainingSeconds, endGame],
   );
 
+  async function handleQuit() {
+    if (!gameId) return;
+    setQuitting(true);
+    await endGame(score, gameId);
+    setQuitting(false);
+    setConfirmingQuit(false);
+  }
+
   useEffect(() => {
     if (phase === "playing" && remainingSeconds <= 0 && !timedOutRef.current) {
       timedOutRef.current = true;
@@ -139,10 +150,10 @@ function PartidaContent() {
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-4 px-4 py-5 lg:px-20 lg:py-10">
       <div className="flex items-center justify-between lg:mb-5">
-        {/* Retirada voluntaria (confirmación + finishGame): CIN-42. */}
         <button
           type="button"
           aria-label="Terminar partida"
+          onClick={() => setConfirmingQuit(true)}
           className="border-border bg-surface flex h-[34px] w-[34px] items-center justify-center rounded-[10px] border lg:h-10 lg:w-10"
         >
           <CloseIcon
@@ -152,6 +163,17 @@ function PartidaContent() {
         </button>
         <GameBadges nodeCount={chain.length} score={score} />
       </div>
+
+      {confirmingQuit && (
+        <ConfirmDialog
+          title="¿Terminar la partida?"
+          description={`Tu puntuación actual (${score} puntos) se guardará. No podrás seguir esta partida después.`}
+          confirmLabel="Terminar partida"
+          confirming={quitting}
+          onConfirm={() => void handleQuit()}
+          onClose={() => setConfirmingQuit(false)}
+        />
+      )}
 
       <div className="flex flex-col items-center gap-2 lg:hidden">
         <TimerRing remainingSeconds={remainingSeconds} totalSeconds={TURN_TIME_LIMIT_SECONDS} />
