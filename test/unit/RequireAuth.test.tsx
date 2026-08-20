@@ -56,4 +56,16 @@ describe("RequireAuth", () => {
     expect(screen.getByText("Contenido protegido")).toBeInTheDocument();
     expect(replaceMock).not.toHaveBeenCalled();
   });
+
+  it("con usuario autenticado, muestra siempre la cabecera con el logo (CIN-57)", () => {
+    vi.mocked(useAuth).mockReturnValue({ user: { uid: "user-1" } as User, loading: false });
+
+    render(
+      <RequireAuth>
+        <p>Contenido protegido</p>
+      </RequireAuth>,
+    );
+
+    expect(screen.getByText("CinemaLoop")).toBeInTheDocument();
+  });
 });
