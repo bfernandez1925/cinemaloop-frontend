@@ -8,6 +8,10 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  /* Inter Tight = UI/body (font-sans, por defecto); EB Garamond = wordmark,
+     headings y números de puntuación (font-display). Ver spec-design-fidelity.md. */
+  --font-sans: var(--font-inter-tight);
+  --font-display: var(--font-eb-garamond);
 }
 
 @media (prefers-color-scheme: dark) {
