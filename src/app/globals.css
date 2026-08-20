@@ -6,7 +6,7 @@
  * ADR-0006 — no hay tailwind.config.ts). El espejo en JS/TS vive en
  * src/design/tokens.ts; test/unit/tokens.test.ts verifica que ambos no
  * diverjan. Ningún componente debe repetir estos valores a mano: usa las
- * utilidades generadas (bg-orange, text-h2, rounded-card...) o importa
+ * utilidades generadas (bg-orange, text-screen-title, rounded-card...) o importa
  * desde tokens.ts si necesita el valor crudo en JS.
  *
  * Cinemaloop es una app de tema oscuro único (sin modo claro/oscuro del
@@ -51,19 +51,24 @@
   --font-sans: var(--font-inter-tight);
   --font-display: var(--font-eb-garamond);
 
-  /* Escala tipográfica: cuando la spec da un rango, se usa su extremo
-     inferior como valor base (política documentada en tokens.ts); los
-     pares wordmark/score-hero son los dos breakpoints reales del handoff
-     (mobile 390px / desktop 1280px) y se aplican con el modificador lg:. */
+  /* Escala tipográfica: los pares -lg son los dos breakpoints reales del
+     handoff (mobile 390px / desktop 1280px), verificados screen por
+     screen contra CinemaLoop.dc.html a medida que se implementan (ver
+     tokens.ts). Se aplican con el modificador lg: en los componentes. */
   --text-wordmark: 36px;
   --text-wordmark--font-weight: 500;
   --text-wordmark-lg: 52px;
   --text-wordmark-lg--font-weight: 500;
 
-  --text-h2: 20px;
-  --text-h2--font-weight: 600;
-  --text-h3: 17px;
-  --text-h3--font-weight: 600;
+  --text-screen-title: 22px;
+  --text-screen-title--font-weight: 600;
+  --text-screen-title-lg: 30px;
+  --text-screen-title-lg--font-weight: 600;
+
+  --text-card-title: 17px;
+  --text-card-title--font-weight: 600;
+  --text-card-title-lg: 20px;
+  --text-card-title-lg--font-weight: 600;
 
   --text-score-hero: 46px;
   --text-score-hero--font-weight: 700;
@@ -71,17 +76,19 @@
   --text-score-hero-lg--font-weight: 700;
 
   --text-body: 14px;
+  --text-card-body: 13px;
+  --text-card-body-lg: 14px;
   --text-meta: 9.5px;
 
   --text-badge: 10px;
   --text-badge--font-weight: 700;
   --text-badge--letter-spacing: 0.06em;
 
-  /* Radios: tarjeta 14px mobile / 16px desktop (extremo inferior del
-     rango documentado); pill siempre completamente redondeada; imagen
-     como % del lado corto. */
-  --radius-card: 14px;
-  --radius-card-lg: 16px;
+  /* Radios: tarjeta 16px mobile / 18px desktop, verificado en la screen
+     02 (dentro del rango 14-20/16-28 que documenta la spec); pill
+     siempre completamente redondeada; imagen como % del lado corto. */
+  --radius-card: 16px;
+  --radius-card-lg: 18px;
   --radius-pill: 9999px;
   --radius-image: 26%;
 }
