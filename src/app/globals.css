@@ -91,6 +91,11 @@
   --text-button: 15px;
   --text-button--font-weight: 700;
 
+  --text-timer-number: 21px;
+  --text-timer-number--font-weight: 700;
+  --text-timer-number-lg: 28px;
+  --text-timer-number-lg--font-weight: 700;
+
   --text-badge: 10px;
   --text-badge--font-weight: 700;
   --text-badge--letter-spacing: 0.06em;
