@@ -1,9 +1,11 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import LandingPage from "@/app/page";
+import { useAuth } from "@/lib/auth/AuthProvider";
 
+const replaceMock = vi.fn();
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn() }),
+  useRouter: () => ({ push: vi.fn(), replace: replaceMock }),
 }));
 
 vi.mock("firebase/auth", () => ({
@@ -13,7 +15,34 @@ vi.mock("firebase/auth", () => ({
   getAuth: vi.fn(() => ({})),
 }));
 
+vi.mock("@/lib/auth/AuthProvider", () => ({
+  useAuth: vi.fn(),
+}));
+
 describe("LandingPage", () => {
+  beforeEach(() => {
+    replaceMock.mockClear();
+    vi.mocked(useAuth).mockReturnValue({ user: null, loading: false });
+  });
+
+  it("con sesión activa, no muestra la landing y redirige a /inicio (CIN-50)", () => {
+    vi.mocked(useAuth).mockReturnValue({ user: { uid: "user-1" } as never, loading: false });
+
+    render(<LandingPage />);
+
+    expect(screen.queryByRole("heading", { name: "CinemaLoop" })).not.toBeInTheDocument();
+    expect(replaceMock).toHaveBeenCalledWith("/inicio");
+  });
+
+  it("mientras Firebase Auth no ha resuelto el estado, no muestra la landing", () => {
+    vi.mocked(useAuth).mockReturnValue({ user: null, loading: true });
+
+    render(<LandingPage />);
+
+    expect(screen.queryByRole("heading", { name: "CinemaLoop" })).not.toBeInTheDocument();
+    expect(replaceMock).not.toHaveBeenCalled();
+  });
+
   it("muestra el wordmark y los botones de autenticación (hero + CTA final)", () => {
     render(<LandingPage />);
 

@@ -2,9 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import type { ComponentType } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AuthModal } from "@/components/AuthModal";
 import { ICONS } from "@/design/icons";
+import { useAuth } from "@/lib/auth/AuthProvider";
 
 type IconType = ComponentType<{ className?: string; strokeWidth?: number }>;
 
@@ -149,7 +150,23 @@ const STATS = [
 
 export default function LandingPage() {
   const router = useRouter();
+  const { user, loading } = useAuth();
   const [authMode, setAuthMode] = useState<"login" | "signup" | null>(null);
+
+  useEffect(() => {
+    if (!loading && user) router.replace("/inicio");
+  }, [loading, user, router]);
+
+  // Un usuario con sesión activa nunca debe ver el formulario de
+  // login/registro de la landing (CIN-50) — se bloquea el render hasta
+  // que Firebase Auth confirme que no hay sesión, igual que RequireAuth.
+  if (loading || user) {
+    return (
+      <main className="flex min-h-screen flex-1 items-center justify-center">
+        <p className="text-text-secondary text-sm">Cargando…</p>
+      </main>
+    );
+  }
 
   return (
     <>

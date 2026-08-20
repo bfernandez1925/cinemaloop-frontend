@@ -13,6 +13,11 @@ test.describe("pantalla Landing / Login", () => {
   test("mobile 390px", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 820 });
     await page.goto("/");
+    // Desde CIN-50 la landing bloquea el render hasta que Firebase Auth
+    // confirma que no hay sesión (para no mostrar nunca el login a un
+    // usuario ya autenticado) — sin esta espera, la captura podría
+    // congelar el estado "Cargando…" en vez de la landing real.
+    await page.getByRole("button", { name: "Iniciar sesión" }).first().waitFor();
     await page.waitForFunction(() => document.fonts.status === "loaded");
 
     await expect(page).toHaveScreenshot("landing-mobile.png", {
@@ -24,6 +29,11 @@ test.describe("pantalla Landing / Login", () => {
   test("desktop 1280px", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto("/");
+    // Desde CIN-50 la landing bloquea el render hasta que Firebase Auth
+    // confirma que no hay sesión (para no mostrar nunca el login a un
+    // usuario ya autenticado) — sin esta espera, la captura podría
+    // congelar el estado "Cargando…" en vez de la landing real.
+    await page.getByRole("button", { name: "Iniciar sesión" }).first().waitFor();
     await page.waitForFunction(() => document.fonts.status === "loaded");
 
     await expect(page).toHaveScreenshot("landing-desktop.png", {
