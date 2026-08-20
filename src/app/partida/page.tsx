@@ -1,0 +1,193 @@
+"use client";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { AnswerForm } from "@/components/AnswerForm";
+import { DirectionIndicator } from "@/components/DirectionIndicator";
+import { GameBadges } from "@/components/GameBadges";
+import { NodeCard } from "@/components/NodeCard";
+import { RequireAuth } from "@/components/RequireAuth";
+import { TimerRing } from "@/components/TimerRing";
+import { UsedEntitiesList } from "@/components/UsedEntitiesList";
+import { ICONS } from "@/design/icons";
+import { finishGame, submitAnswer } from "@/lib/game/api";
+import type { FinishGameResponse, GameNode, NodeType } from "@/lib/game/types";
+import { TURN_TIME_LIMIT_SECONDS, useTurnTimer } from "@/lib/game/useTurnTimer";
+import { clearActiveGameSession, readActiveGameSession } from "@/lib/game/session";
+
+type Phase = "loading" | "playing" | "checking" | "gameOver";
+
+// Se envía cuando se acaba el tiempo del turno sin nada válido escrito
+// (submitAnswer no acepta una respuesta vacía) — un texto que en la
+// práctica nunca encaja con TMDb, así que el turno se resuelve como
+// incorrecto por el mismo camino ya existente en el servidor, sin
+// duplicar aquí su lógica de fin de partida.
+const TIMEOUT_ANSWER = "(tiempo agotado)";
+
+function PartidaContent() {
+  const router = useRouter();
+  // Se lee la sesión de forma síncrona en la inicialización perezosa del
+  // estado (no en un efecto) para no disparar un setState en cascada
+  // justo al montar — solo la redirección cuando falta necesita efecto.
+  const [session] = useState(() => readActiveGameSession());
+  const [gameId] = useState(() => session?.gameId ?? null);
+  const [chain, setChain] = useState<GameNode[]>(() => (session ? [session.nodoActual] : []));
+  const [score, setScore] = useState(0);
+  const [phase, setPhase] = useState<Phase>(() => (session ? "playing" : "loading"));
+  const [turnStartedAt, setTurnStartedAt] = useState<number | null>(() =>
+    session ? Date.now() : null,
+  );
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [summary, setSummary] = useState<FinishGameResponse | null>(null);
+  const timedOutRef = useRef(false);
+
+  useEffect(() => {
+    if (!session) router.replace("/modos");
+  }, [session, router]);
+
+  const currentNode = chain.length > 0 ? chain[chain.length - 1]! : null;
+  const expectedType: NodeType | null = currentNode
+    ? currentNode.tipo === "actor"
+      ? "pelicula"
+      : "actor"
+    : null;
+  const remainingSeconds = useTurnTimer(phase === "playing" ? turnStartedAt : null);
+
+  const endGame = useCallback(async (finalScore: number, activeGameId: string) => {
+    setScore(finalScore);
+    setPhase("gameOver");
+    clearActiveGameSession();
+    try {
+      setSummary(await finishGame(activeGameId));
+    } catch {
+      // El resumen detallado (nodos alcanzados, tiempo medio) es un
+      // añadido informativo — si finishGame falla, el jugador ya ve
+      // su puntuación final igualmente, no se bloquea la pantalla.
+      setSummary(null);
+    }
+  }, []);
+
+  const handleAnswer = useCallback(
+    async (respuesta: string) => {
+      if (!gameId || !currentNode || phase !== "playing") return;
+      setPhase("checking");
+      setErrorMessage(null);
+      const tiempoRespuestaSegundos = Math.max(0, TURN_TIME_LIMIT_SECONDS - remainingSeconds);
+
+      try {
+        const result = await submitAnswer(gameId, respuesta, tiempoRespuestaSegundos);
+        if (!result.correcto) {
+          await endGame(result.puntuacion_total, gameId);
+          return;
+        }
+        setChain((prev) => [...prev, result.nodoActual]);
+        setScore(result.puntuacion_total);
+        if (result.partida_finalizada) {
+          await endGame(result.puntuacion_total, gameId);
+          return;
+        }
+        timedOutRef.current = false;
+        setTurnStartedAt(Date.now());
+        setPhase("playing");
+      } catch {
+        setErrorMessage("No se pudo comprobar la respuesta. Inténtalo de nuevo.");
+        setPhase("playing");
+      }
+    },
+    [gameId, currentNode, phase, remainingSeconds, endGame],
+  );
+
+  useEffect(() => {
+    if (phase === "playing" && remainingSeconds <= 0 && !timedOutRef.current) {
+      timedOutRef.current = true;
+      void handleAnswer(TIMEOUT_ANSWER);
+    }
+  }, [phase, remainingSeconds, handleAnswer]);
+
+  if (phase === "loading" || !currentNode || !expectedType) {
+    return (
+      <main className="flex flex-1 items-center justify-center">
+        <p className="text-text-secondary text-sm">Cargando…</p>
+      </main>
+    );
+  }
+
+  if (phase === "gameOver") {
+    return (
+      <main className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
+        <h2 className="font-display text-screen-title text-text-primary">Partida terminada</h2>
+        <p className="font-display text-score-hero text-orange">{score}</p>
+        {summary && (
+          <p className="text-body text-text-secondary">
+            {summary.nodos_alcanzados} nodos alcanzados
+          </p>
+        )}
+        <Link
+          href="/modos"
+          className="text-button bg-orange text-bg-primary rounded-control px-7 py-[15px]"
+        >
+          Volver a jugar
+        </Link>
+      </main>
+    );
+  }
+
+  const usedEntities = chain.filter((node) => node.tipo === expectedType);
+  const CloseIcon = ICONS.close;
+
+  return (
+    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-4 px-4 py-5 lg:px-20 lg:py-10">
+      <div className="flex items-center justify-between lg:mb-5">
+        {/* Retirada voluntaria (confirmación + finishGame): CIN-42. */}
+        <button
+          type="button"
+          aria-label="Terminar partida"
+          className="border-border bg-surface flex h-[34px] w-[34px] items-center justify-center rounded-[10px] border lg:h-10 lg:w-10"
+        >
+          <CloseIcon
+            className="text-text-primary h-[15px] w-[15px] lg:h-[17px] lg:w-[17px]"
+            strokeWidth={1.8}
+          />
+        </button>
+        <GameBadges nodeCount={chain.length} score={score} />
+      </div>
+
+      <div className="flex flex-col items-center gap-2 lg:hidden">
+        <TimerRing remainingSeconds={remainingSeconds} totalSeconds={TURN_TIME_LIMIT_SECONDS} />
+      </div>
+
+      <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[340px_1fr] lg:items-start lg:gap-14">
+        <div className="flex flex-col items-center gap-5">
+          <div className="hidden lg:block">
+            <TimerRing remainingSeconds={remainingSeconds} totalSeconds={TURN_TIME_LIMIT_SECONDS} />
+          </div>
+          <NodeCard node={currentNode} />
+        </div>
+
+        <div className="flex flex-col gap-4 lg:gap-6">
+          <DirectionIndicator currentType={currentNode.tipo} />
+          <AnswerForm
+            expectedType={expectedType}
+            submitting={phase === "checking"}
+            onSubmit={(respuesta) => void handleAnswer(respuesta)}
+          />
+          {errorMessage && (
+            <p role="alert" className="text-orange-tint-text text-sm">
+              {errorMessage}
+            </p>
+          )}
+          <UsedEntitiesList type={expectedType} entities={usedEntities} />
+        </div>
+      </div>
+    </main>
+  );
+}
+
+export default function PartidaPage() {
+  return (
+    <RequireAuth>
+      <PartidaContent />
+    </RequireAuth>
+  );
+}

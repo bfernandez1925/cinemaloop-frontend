@@ -29,6 +29,7 @@
   --color-orange-active: #e64b2f;
   --color-orange-disabled: rgba(255, 90, 60, 0.35);
   --color-orange-tint-bg: rgba(255, 90, 60, 0.15);
+  --color-orange-tint-bg-strong: rgba(255, 90, 60, 0.18);
   --color-orange-tint-text: #ff9478;
 
   --color-violet: #7b3cff;
@@ -36,6 +37,7 @@
   --color-violet-active: #6529e6;
   --color-violet-disabled: rgba(123, 60, 255, 0.35);
   --color-violet-tint-bg: rgba(123, 60, 255, 0.15);
+  --color-violet-tint-bg-strong: rgba(123, 60, 255, 0.18);
   --color-violet-tint-text: #a78bfa;
   --color-violet-tint-text-strong: #d9cfff;
   --color-surface-glass: rgba(18, 21, 29, 0.7);
@@ -100,6 +102,29 @@
   --text-badge--font-weight: 700;
   --text-badge--letter-spacing: 0.06em;
 
+  --text-node-title: 17px;
+  --text-node-title--font-weight: 600;
+  --text-node-title-lg: 21px;
+  --text-node-title-lg--font-weight: 600;
+
+  --text-badge-number: 19px;
+  --text-badge-number--font-weight: 700;
+  --text-badge-number-lg: 22px;
+  --text-badge-number-lg--font-weight: 700;
+
+  --text-direction: 12px;
+  --text-direction-lg: 14px;
+
+  --text-input: 14px;
+  --text-input-lg: 16px;
+
+  --text-section-label: 11.5px;
+  --text-section-label--font-weight: 700;
+  --text-section-label--letter-spacing: 0.04em;
+  --text-section-label-lg: 13px;
+  --text-section-label-lg--font-weight: 700;
+  --text-section-label-lg--letter-spacing: 0.04em;
+
   /* Radios: tarjeta 16px mobile / 18px desktop, verificado en la screen
      02 (dentro del rango 14-20/16-28 que documenta la spec); pill
      siempre completamente redondeada; imagen como % del lado corto. */
@@ -109,6 +134,8 @@
   --radius-image: 26%;
   /* Controles (botones, inputs): verificado en la screen 01. */
   --radius-control: 12px;
+  /* Panel (nodo actual, contenedor de "ya usados"): verificado en 03a/03b. */
+  --radius-panel: 20px;
 }
 
 body {

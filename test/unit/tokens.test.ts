@@ -48,6 +48,8 @@ describe("sincronía de tokens.ts con el @theme de globals.css", () => {
     ["scoreHero", "score-hero"],
     ["statNumber", "stat-number"],
     ["timerNumber", "timer-number"],
+    ["nodeTitle", "node-title"],
+    ["badgeNumber", "badge-number"],
   ] as const)("typography.%s (mobile/desktop) coincide con --text-%s(-lg)", (key, cssName) => {
     const token = typography[key];
     expect(cssVar(`text-${cssName}`)).toBe(token.mobile);
@@ -57,14 +59,25 @@ describe("sincronía de tokens.ts con el @theme de globals.css", () => {
   it.each([
     ["cardBody", "card-body"],
     ["leadParagraph", "lead-paragraph"],
+    ["directionText", "direction"],
+    ["inputText", "input"],
   ] as const)("typography.%s (mobile/desktop) coincide con --text-%s(-lg)", (key, cssName) => {
     const token = typography[key];
     expect(cssVar(`text-${cssName}`)).toBe(token.mobile);
     expect(cssVar(`text-${cssName}-lg`)).toBe(token.desktop);
   });
 
-  it("radii.control coincide con --radius-control", () => {
+  it("typography.sectionLabel (mobile/desktop) coincide con --text-section-label(-lg)", () => {
+    expect(cssVar("text-section-label")).toBe(typography.sectionLabel.mobile);
+    expect(cssVar("text-section-label-lg")).toBe(typography.sectionLabel.desktop);
+    expect(cssVar("text-section-label--letter-spacing")).toBe(
+      typography.sectionLabel.letterSpacing,
+    );
+  });
+
+  it("radii.control/panel coinciden con --radius-control/--radius-panel", () => {
     expect(cssVar("radius-control")).toBe(radii.control);
+    expect(cssVar("radius-panel")).toBe(radii.panel);
   });
 
   it("typography.button coincide con --text-button", () => {

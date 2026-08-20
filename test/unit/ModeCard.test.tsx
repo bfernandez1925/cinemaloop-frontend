@@ -1,5 +1,5 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import { ModeCard } from "@/components/ModeCard";
 import { ICONS } from "@/design/icons";
 
@@ -51,5 +51,38 @@ describe("ModeCard", () => {
 
     expect(screen.getByText(description.mobile)).toBeInTheDocument();
     expect(screen.getByText(description.desktop)).toBeInTheDocument();
+  });
+
+  it("al pulsarla llama a onClick", () => {
+    const onClick = vi.fn();
+    render(
+      <ModeCard
+        icon={ICONS.modeClasico}
+        title="Clásico"
+        description={description}
+        variant="primary"
+        onClick={onClick}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /clásico/i }));
+
+    expect(onClick).toHaveBeenCalledOnce();
+  });
+
+  it("con loading, se deshabilita y muestra Un momento… en vez de Popular", () => {
+    render(
+      <ModeCard
+        icon={ICONS.modeClasico}
+        title="Clásico"
+        description={description}
+        variant="primary"
+        loading
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: /clásico/i })).toBeDisabled();
+    expect(screen.getByText("Un momento…")).toBeInTheDocument();
+    expect(screen.queryByText("Popular")).not.toBeInTheDocument();
   });
 });

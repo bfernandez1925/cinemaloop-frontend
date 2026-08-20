@@ -5,15 +5,25 @@ type ModeCardProps = {
   title: string;
   description: { mobile: string; desktop: string };
   variant: "primary" | "comingSoon";
+  onClick?: () => void;
+  loading?: boolean;
 };
 
-export function ModeCard({ icon: Icon, title, description, variant }: ModeCardProps) {
+export function ModeCard({
+  icon: Icon,
+  title,
+  description,
+  variant,
+  onClick,
+  loading = false,
+}: ModeCardProps) {
   const isComingSoon = variant === "comingSoon";
 
   return (
     <button
       type="button"
-      disabled={isComingSoon}
+      onClick={onClick}
+      disabled={isComingSoon || loading}
       aria-disabled={isComingSoon}
       className={`bg-surface relative flex flex-col items-start rounded-card border-[1.5px] p-[22px] text-left lg:rounded-card-lg lg:p-8 ${
         isComingSoon ? "border-border cursor-not-allowed" : "border-orange cursor-pointer"
@@ -24,7 +34,7 @@ export function ModeCard({ icon: Icon, title, description, variant }: ModeCardPr
           isComingSoon ? "bg-surface-elevated text-text-muted" : "bg-orange-tint-bg text-orange"
         }`}
       >
-        {isComingSoon ? "Próximamente" : "Popular"}
+        {isComingSoon ? "Próximamente" : loading ? "Un momento…" : "Popular"}
       </span>
 
       <Icon
