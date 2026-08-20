@@ -132,6 +132,11 @@
   --text-stat-card-number-lg: 22px;
   --text-stat-card-number-lg--font-weight: 700;
 
+  --text-record-number: 18px;
+  --text-record-number--font-weight: 700;
+  --text-record-number-lg: 26px;
+  --text-record-number-lg--font-weight: 700;
+
   /* Radios: tarjeta 16px mobile / 18px desktop, verificado en la screen
      02 (dentro del rango 14-20/16-28 que documenta la spec); pill
      siempre completamente redondeada; imagen como % del lado corto. */
@@ -146,6 +151,10 @@
   /* Tarjeta de estadística de fin de partida: verificado en la screen
      "04 · Fin de partida". */
   --radius-stat-card: 14px;
+  /* Tarjeta de récord de "Mis partidas": a diferencia de --radius-stat-card,
+     sí varía por breakpoint — verificado en la screen "06 · Mis partidas". */
+  --radius-record-card: 14px;
+  --radius-record-card-lg: 16px;
 }
 
 body {

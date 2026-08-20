@@ -137,6 +137,11 @@ export const typography = {
   // (nodos alcanzados, tiempo medio): verificado en la screen "04 · Fin
   // de partida" — distinto de statNumber (Landing) y badgeNumber (partida).
   statCardNumber: { mobile: "18px", desktop: "22px", weight: 700, family: "display" },
+  // Número dentro de las tarjetas de récord de "Mis partidas" (mejor
+  // puntuación, cadena más larga, partidas jugadas): verificado en la
+  // screen "06 · Mis partidas" — parecido pero distinto de
+  // statCardNumber (22px, no 26px, en desktop).
+  recordNumber: { mobile: "18px", desktop: "26px", weight: 700, family: "display" },
 } as const;
 
 export const radii = {
@@ -157,8 +162,14 @@ export const radii = {
   panel: "20px",
   // Tarjeta de estadística de fin de partida: 14px flat, distinto del
   // radio de tarjeta general (16/18px) — verificado en la screen
-  // "04 · Fin de partida".
+  // "04 · Fin de partida". También coincide con la fila de historial de
+  // "06 · Mis partidas" (14px flat ahí también, mobile y desktop).
   statCard: "14px",
+  // Tarjeta de récord de "Mis partidas": a diferencia de statCard, aquí
+  // el radio SÍ varía por breakpoint (14/16px) — verificado en la
+  // screen "06 · Mis partidas".
+  recordCardMobile: "14px",
+  recordCardDesktop: "16px",
 } as const;
 
 /** Gaps estándar del sistema — ya cubiertos por la escala de espaciado por
