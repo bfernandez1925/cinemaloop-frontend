@@ -46,14 +46,27 @@ describe("sincronía de tokens.ts con el @theme de globals.css", () => {
     ["screenTitle", "screen-title"],
     ["cardTitle", "card-title"],
     ["scoreHero", "score-hero"],
+    ["statNumber", "stat-number"],
   ] as const)("typography.%s (mobile/desktop) coincide con --text-%s(-lg)", (key, cssName) => {
     const token = typography[key];
     expect(cssVar(`text-${cssName}`)).toBe(token.mobile);
     expect(cssVar(`text-${cssName}-lg`)).toBe(token.desktop);
   });
 
-  it("typography.cardBody (mobile/desktop) coincide con --text-card-body(-lg)", () => {
-    expect(cssVar("text-card-body")).toBe(typography.cardBody.mobile);
-    expect(cssVar("text-card-body-lg")).toBe(typography.cardBody.desktop);
+  it.each([
+    ["cardBody", "card-body"],
+    ["leadParagraph", "lead-paragraph"],
+  ] as const)("typography.%s (mobile/desktop) coincide con --text-%s(-lg)", (key, cssName) => {
+    const token = typography[key];
+    expect(cssVar(`text-${cssName}`)).toBe(token.mobile);
+    expect(cssVar(`text-${cssName}-lg`)).toBe(token.desktop);
+  });
+
+  it("radii.control coincide con --radius-control", () => {
+    expect(cssVar("radius-control")).toBe(radii.control);
+  });
+
+  it("typography.button coincide con --text-button", () => {
+    expect(cssVar("text-button")).toBe(typography.button.size);
   });
 });

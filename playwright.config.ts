@@ -12,10 +12,20 @@ export default defineConfig({
     trace: "on-first-retry",
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
-  webServer: {
-    command: `npm run build && npx serve out -p ${PORT}`,
-    url: baseURL,
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
-  },
+  webServer: [
+    {
+      // build:e2e (a diferencia de build) conecta el SDK de Firebase Auth
+      // contra el emulador en vez del proyecto real cinemaloop-platform.
+      command: `npm run build:e2e && npx serve out -p ${PORT}`,
+      url: baseURL,
+      reuseExistingServer: !process.env.CI,
+      timeout: 120_000,
+    },
+    {
+      command: "npx firebase emulators:start --only auth --project cinemaloop-platform",
+      port: 9099,
+      reuseExistingServer: !process.env.CI,
+      timeout: 60_000,
+    },
+  ],
 });

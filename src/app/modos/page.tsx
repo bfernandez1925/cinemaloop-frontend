@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { BackButton } from "@/components/BackButton";
 import { ModeCard } from "@/components/ModeCard";
+import { RequireAuth } from "@/components/RequireAuth";
 import { ICONS } from "@/design/icons";
 
 export const metadata: Metadata = {
@@ -43,19 +44,21 @@ const MODES = [
 
 export default function ModeSelectPage() {
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-5 pt-2 pb-10 lg:px-20 lg:py-10">
-      <div className="mb-6 flex items-center gap-[14px] lg:mb-10 lg:gap-4">
-        <BackButton href="/" />
-        <h2 className="font-display text-screen-title lg:text-screen-title-lg text-text-primary">
-          Elige tu modo
-        </h2>
-      </div>
+    <RequireAuth>
+      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-5 pt-2 pb-10 lg:px-20 lg:py-10">
+        <div className="mb-6 flex items-center gap-[14px] lg:mb-10 lg:gap-4">
+          <BackButton href="/" />
+          <h2 className="font-display text-screen-title lg:text-screen-title-lg text-text-primary">
+            Elige tu modo
+          </h2>
+        </div>
 
-      <div className="flex flex-col gap-[14px] lg:grid lg:grid-cols-3 lg:gap-6">
-        {MODES.map(({ key, ...mode }) => (
-          <ModeCard key={key} {...mode} />
-        ))}
-      </div>
-    </main>
+        <div className="flex flex-col gap-[14px] lg:grid lg:grid-cols-3 lg:gap-6">
+          {MODES.map(({ key, ...mode }) => (
+            <ModeCard key={key} {...mode} />
+          ))}
+        </div>
+      </main>
+    </RequireAuth>
   );
 }
