@@ -47,6 +47,7 @@ describe("sincronía de tokens.ts con el @theme de globals.css", () => {
     ["cardTitle", "card-title"],
     ["scoreHero", "score-hero"],
     ["statNumber", "stat-number"],
+    ["timerNumber", "timer-number"],
   ] as const)("typography.%s (mobile/desktop) coincide con --text-%s(-lg)", (key, cssName) => {
     const token = typography[key];
     expect(cssVar(`text-${cssName}`)).toBe(token.mobile);

@@ -87,6 +87,9 @@ export const typography = {
   // Número de estadística destacada (Landing: "12,480 jugadores"...):
   // verificado en la screen 01.
   statNumber: { mobile: "20px", desktop: "24px", weight: 700, family: "display" },
+  // Número central del anillo de temporizador: verificado en la screen
+  // "03a · Pantalla de juego" (80px/110px de anillo).
+  timerNumber: { mobile: "21px", desktop: "28px", weight: 700, family: "display" },
   meta: { min: "9.5px", max: "13px", weight: 400, family: "sans" },
   // Texto de botón (primario/secundario): verificado en la screen 01,
   // igual en mobile y desktop (sin par de breakpoints).
