@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { EB_Garamond, Inter_Tight } from "next/font/google";
+import { AuthProvider } from "@/lib/auth/AuthProvider";
 import "./globals.css";
 
 // Cargadas vía next/font/google (auto-hosted, fallback con métricas
@@ -25,7 +26,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="es" className={`h-full antialiased ${ebGaramond.variable} ${interTight.variable}`}>
-      <body className="min-h-full flex flex-col font-sans">{children}</body>
+      <body className="min-h-full flex flex-col font-sans">
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   );
 }

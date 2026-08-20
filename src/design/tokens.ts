@@ -41,6 +41,10 @@ export const colors = {
   // La spec da dos valores para el texto sobre tint violeta
   // ("#A78BFA / #D9CFFF"); el segundo es la variante de mayor énfasis.
   violetTintTextStrong: "#D9CFFF",
+  // Superficie "cristal" de las tarjetas decorativas de vista previa de
+  // cadena en Landing (surface con alpha + backdrop-filter), verificado
+  // en la screen 01 de CinemaLoop.dc.html.
+  surfaceGlass: "rgba(18, 21, 29, 0.7)",
 } as const;
 
 /** Violeta = actor, naranja = película — nunca hardcodeado por componente. */
@@ -78,7 +82,15 @@ export const typography = {
   // Copy secundario dentro de una tarjeta (p. ej. descripción de modo):
   // verificado en la screen 02, color text-tertiary.
   cardBody: { mobile: "13px", desktop: "14px", weight: 400, family: "sans" },
+  // Párrafo de intro bajo el wordmark (Landing): verificado en la screen 01.
+  leadParagraph: { mobile: "15px", desktop: "17px", weight: 400, family: "sans" },
+  // Número de estadística destacada (Landing: "12,480 jugadores"...):
+  // verificado en la screen 01.
+  statNumber: { mobile: "20px", desktop: "24px", weight: 700, family: "display" },
   meta: { min: "9.5px", max: "13px", weight: 400, family: "sans" },
+  // Texto de botón (primario/secundario): verificado en la screen 01,
+  // igual en mobile y desktop (sin par de breakpoints).
+  button: { size: "15px", weight: 700, family: "sans" },
   badge: {
     min: "10px",
     max: "13px",
@@ -100,6 +112,8 @@ export const radii = {
   pill: "9999px",
   // Imagen (actor/póster): ~26% del lado corto — nunca esquina recta, nunca circular.
   image: "26%",
+  // Controles (botones, inputs): verificado en la screen 01 de CinemaLoop.dc.html.
+  control: "12px",
 } as const;
 
 /** Gaps estándar del sistema — ya cubiertos por la escala de espaciado por

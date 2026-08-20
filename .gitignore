@@ -32,6 +32,13 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# .env es una excepción deliberada: solo contiene la config web pública
+# de Firebase (apiKey, authDomain...), no secretos — Firebase depende de
+# las reglas de seguridad de Firestore/Auth, no de ocultar este archivo.
+# Hace falta en build time (export estático, tanto en CI como en
+# cualquier máquina que compile el proyecto) y en `next dev` — por eso
+# es `.env`, no `.env.production` (Next.js solo carga ese en build/start).
+!.env
 
 # vercel
 .vercel

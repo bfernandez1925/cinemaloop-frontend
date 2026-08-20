@@ -38,6 +38,7 @@
   --color-violet-tint-bg: rgba(123, 60, 255, 0.15);
   --color-violet-tint-text: #a78bfa;
   --color-violet-tint-text-strong: #d9cfff;
+  --color-surface-glass: rgba(18, 21, 29, 0.7);
 
   /* Regla de ingeniería: violeta = actor, naranja = película, siempre vía
      estos alias semánticos — nunca --color-violet/--color-orange a pelo
@@ -78,7 +79,17 @@
   --text-body: 14px;
   --text-card-body: 13px;
   --text-card-body-lg: 14px;
+  --text-lead-paragraph: 15px;
+  --text-lead-paragraph-lg: 17px;
   --text-meta: 9.5px;
+
+  --text-stat-number: 20px;
+  --text-stat-number--font-weight: 700;
+  --text-stat-number-lg: 24px;
+  --text-stat-number-lg--font-weight: 700;
+
+  --text-button: 15px;
+  --text-button--font-weight: 700;
 
   --text-badge: 10px;
   --text-badge--font-weight: 700;
@@ -91,10 +102,27 @@
   --radius-card-lg: 18px;
   --radius-pill: 9999px;
   --radius-image: 26%;
+  /* Controles (botones, inputs): verificado en la screen 01. */
+  --radius-control: 12px;
 }
 
 body {
   background: var(--color-bg-primary);
   color: var(--color-text-primary);
   font-family: var(--font-sans);
+}
+
+/* Deriva sutil de los gradientes de fondo de Landing (screen 01),
+   verificado en CinemaLoop.dc.html. No es un token de diseño (no varía
+   por componente), así que vive fuera de @theme. */
+@keyframes cl-drift {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-3%, 2%) scale(1.05);
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
 }

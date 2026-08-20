@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:e2e": "NEXT_PUBLIC_USE_FIREBASE_AUTH_EMULATOR=true next build",
     "start": "serve out",
     "lint": "eslint",
     "format": "prettier --write .",
@@ -18,6 +19,7 @@
     "postinstall": "playwright install --with-deps chromium"
   },
   "dependencies": {
+    "firebase": "^12.18.0",
     "lucide-react": "^1.33.0",
     "next": "16.3.1",
     "react": "19.2.8",
@@ -35,6 +37,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.1",
     "eslint-config-prettier": "^10.1.8",
+    "firebase-tools": "^14.27.0",
     "jsdom": "^29.1.1",
     "prettier": "^3.9.6",
     "serve": "^14.2.6",
