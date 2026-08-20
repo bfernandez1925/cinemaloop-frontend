@@ -31,6 +31,7 @@
   --color-orange-tint-bg: rgba(255, 90, 60, 0.15);
   --color-orange-tint-bg-strong: rgba(255, 90, 60, 0.18);
   --color-orange-tint-text: #ff9478;
+  --color-orange-halo: rgba(255, 90, 60, 0.25);
 
   --color-violet: #7b3cff;
   --color-violet-hover: #9463ff;
@@ -40,6 +41,7 @@
   --color-violet-tint-bg-strong: rgba(123, 60, 255, 0.18);
   --color-violet-tint-text: #a78bfa;
   --color-violet-tint-text-strong: #d9cfff;
+  --color-violet-halo: rgba(123, 60, 255, 0.25);
   --color-surface-glass: rgba(18, 21, 29, 0.7);
 
   /* Regla de ingeniería: violeta = actor, naranja = película, siempre vía

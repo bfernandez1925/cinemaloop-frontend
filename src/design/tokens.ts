@@ -35,6 +35,9 @@ export const colors = {
   // opacidad distinta (0.18) a la del pill "Popular" (0.15) — la spec
   // documenta un rango 0.12–0.18, no un único valor para todo el sistema.
   orangeTintBgStrong: "rgba(255, 90, 60, 0.18)",
+  // Halo del nodo final en la visualización de cadena completa (CIN-44):
+  // verificado en la screen "04 · Fin de partida".
+  orangeHalo: "rgba(255, 90, 60, 0.25)",
 
   violet: "#7B3CFF",
   violetHover: "#9463FF",
@@ -46,6 +49,7 @@ export const colors = {
   // ("#A78BFA / #D9CFFF"); el segundo es la variante de mayor énfasis.
   violetTintTextStrong: "#D9CFFF",
   violetTintBgStrong: "rgba(123, 60, 255, 0.18)",
+  violetHalo: "rgba(123, 60, 255, 0.25)",
   // Superficie "cristal" de las tarjetas decorativas de vista previa de
   // cadena en Landing (surface con alpha + backdrop-filter), verificado
   // en la screen 01 de CinemaLoop.dc.html.
