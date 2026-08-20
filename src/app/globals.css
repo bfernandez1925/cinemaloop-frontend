@@ -1,27 +1,93 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
+/*
+ * Tokens de diseño del handoff (spec-design-fidelity.md), fuente única de
+ * verdad para Tailwind vía @theme (config CSS-first de Tailwind v4, ver
+ * ADR-0006 — no hay tailwind.config.ts). El espejo en JS/TS vive en
+ * src/design/tokens.ts; test/unit/tokens.test.ts verifica que ambos no
+ * diverjan. Ningún componente debe repetir estos valores a mano: usa las
+ * utilidades generadas (bg-orange, text-h2, rounded-card...) o importa
+ * desde tokens.ts si necesita el valor crudo en JS.
+ *
+ * Cinemaloop es una app de tema oscuro único (sin modo claro/oscuro del
+ * sistema, a diferencia del scaffold por defecto de Next.js).
+ */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-bg-primary: #0b0d12;
+  --color-surface: #12151d;
+  --color-surface-elevated: #181c26;
+  --color-text-primary: #f2f2f2;
+  --color-text-secondary: #b8becc;
+  --color-text-tertiary: #9aa1b2;
+  --color-text-muted: #7a8095;
+  --color-border: #3a4152;
+  --color-border-subtle: #232733;
+  --color-divider: #1e212b;
+
+  --color-orange: #ff5a3c;
+  --color-orange-hover: #ff7557;
+  --color-orange-active: #e64b2f;
+  --color-orange-disabled: rgba(255, 90, 60, 0.35);
+  --color-orange-tint-bg: rgba(255, 90, 60, 0.15);
+  --color-orange-tint-text: #ff9478;
+
+  --color-violet: #7b3cff;
+  --color-violet-hover: #9463ff;
+  --color-violet-active: #6529e6;
+  --color-violet-disabled: rgba(123, 60, 255, 0.35);
+  --color-violet-tint-bg: rgba(123, 60, 255, 0.15);
+  --color-violet-tint-text: #a78bfa;
+  --color-violet-tint-text-strong: #d9cfff;
+
+  /* Regla de ingeniería: violeta = actor, naranja = película, siempre vía
+     estos alias semánticos — nunca --color-violet/--color-orange a pelo
+     en un componente que muestre tipo de entidad. */
+  --color-type-actor: var(--color-violet);
+  --color-type-movie: var(--color-orange);
+
   /* Inter Tight = UI/body (font-sans, por defecto); EB Garamond = wordmark,
-     headings y números de puntuación (font-display). Ver spec-design-fidelity.md. */
+     headings y números de puntuación (font-display). Fuentes cargadas
+     vía next/font/google en layout.tsx (CIN-38). */
   --font-sans: var(--font-inter-tight);
   --font-display: var(--font-eb-garamond);
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Escala tipográfica: cuando la spec da un rango, se usa su extremo
+     inferior como valor base (política documentada en tokens.ts); los
+     pares wordmark/score-hero son los dos breakpoints reales del handoff
+     (mobile 390px / desktop 1280px) y se aplican con el modificador lg:. */
+  --text-wordmark: 36px;
+  --text-wordmark--font-weight: 500;
+  --text-wordmark-lg: 52px;
+  --text-wordmark-lg--font-weight: 500;
+
+  --text-h2: 20px;
+  --text-h2--font-weight: 600;
+  --text-h3: 17px;
+  --text-h3--font-weight: 600;
+
+  --text-score-hero: 46px;
+  --text-score-hero--font-weight: 700;
+  --text-score-hero-lg: 80px;
+  --text-score-hero-lg--font-weight: 700;
+
+  --text-body: 14px;
+  --text-meta: 9.5px;
+
+  --text-badge: 10px;
+  --text-badge--font-weight: 700;
+  --text-badge--letter-spacing: 0.06em;
+
+  /* Radios: tarjeta 14px mobile / 16px desktop (extremo inferior del
+     rango documentado); pill siempre completamente redondeada; imagen
+     como % del lado corto. */
+  --radius-card: 14px;
+  --radius-card-lg: 16px;
+  --radius-pill: 9999px;
+  --radius-image: 26%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
 }
