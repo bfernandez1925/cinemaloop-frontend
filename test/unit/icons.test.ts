@@ -6,9 +6,12 @@ describe("ICONS", () => {
     expect(Object.keys(ICONS).sort()).toEqual(
       [
         "actor",
+        "aiCorrection",
         "arrow",
         "back",
+        "clock",
         "close",
+        "gameModes",
         "historial",
         "mic",
         "modeClasico",

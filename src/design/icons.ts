@@ -3,12 +3,14 @@ import {
   ChevronLeft,
   Clapperboard,
   Clock,
+  Gamepad2,
   History,
   Infinity as InfinityIcon,
   Link as LinkIcon,
   Mic,
   Save,
   Search,
+  Sparkles,
   Trophy,
   User,
   X,
@@ -30,6 +32,10 @@ import {
  * modo", CIN-39) no están en la tabla de spec-design-fidelity.md — son
  * glifos propios del handoff sin fila dedicada; se eligen los Lucide más
  * cercanos semánticamente (reloj, rayo, infinito).
+ *
+ * `clock`/`aiCorrection`/`gameModes` (secciones "Cómo se juega"/"Por qué
+ * jugar" de la landing, CIN-51) tampoco están en la spec — esas secciones
+ * son contenido comercial inventado, sin frame de handoff.
  */
 export const ICONS = {
   back: ChevronLeft,
@@ -46,6 +52,9 @@ export const ICONS = {
   modeClasico: Clock,
   modeContrarreloj: Zap,
   modeMaraton: InfinityIcon,
+  clock: Clock,
+  aiCorrection: Sparkles,
+  gameModes: Gamepad2,
 } as const;
 
 export type IconName = keyof typeof ICONS;
