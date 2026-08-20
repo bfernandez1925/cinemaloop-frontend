@@ -11,7 +11,9 @@ export async function signUp(
   { username, email, password }: { username: string; email: string; password: string },
 ) {
   await page.goto("/");
-  await page.getByRole("button", { name: "Crear cuenta" }).click();
+  // Desde CIN-51 la landing tiene el botón "Crear cuenta" tanto en el
+  // hero como en la banda de CTA final — el primero basta para abrir el modal.
+  await page.getByRole("button", { name: "Crear cuenta" }).first().click();
 
   const dialog = page.getByRole("dialog");
   await dialog.getByLabel("Nombre de usuario").fill(username);
