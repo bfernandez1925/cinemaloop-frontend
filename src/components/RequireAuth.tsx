@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { type ReactNode, useEffect } from "react";
+import { AppHeader } from "@/components/AppHeader";
 import { useAuth } from "@/lib/auth/AuthProvider";
 
 /**
@@ -26,5 +27,10 @@ export function RequireAuth({ children }: { children: ReactNode }) {
     );
   }
 
-  return children;
+  return (
+    <>
+      <AppHeader />
+      {children}
+    </>
+  );
 }
