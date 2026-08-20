@@ -127,6 +127,11 @@
   --text-section-label-lg--font-weight: 700;
   --text-section-label-lg--letter-spacing: 0.04em;
 
+  --text-stat-card-number: 18px;
+  --text-stat-card-number--font-weight: 700;
+  --text-stat-card-number-lg: 22px;
+  --text-stat-card-number-lg--font-weight: 700;
+
   /* Radios: tarjeta 16px mobile / 18px desktop, verificado en la screen
      02 (dentro del rango 14-20/16-28 que documenta la spec); pill
      siempre completamente redondeada; imagen como % del lado corto. */
@@ -138,6 +143,9 @@
   --radius-control: 12px;
   /* Panel (nodo actual, contenedor de "ya usados"): verificado en 03a/03b. */
   --radius-panel: 20px;
+  /* Tarjeta de estadística de fin de partida: verificado en la screen
+     "04 · Fin de partida". */
+  --radius-stat-card: 14px;
 }
 
 body {

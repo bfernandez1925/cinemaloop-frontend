@@ -50,6 +50,7 @@ describe("sincronía de tokens.ts con el @theme de globals.css", () => {
     ["timerNumber", "timer-number"],
     ["nodeTitle", "node-title"],
     ["badgeNumber", "badge-number"],
+    ["statCardNumber", "stat-card-number"],
   ] as const)("typography.%s (mobile/desktop) coincide con --text-%s(-lg)", (key, cssName) => {
     const token = typography[key];
     expect(cssVar(`text-${cssName}`)).toBe(token.mobile);
@@ -78,6 +79,10 @@ describe("sincronía de tokens.ts con el @theme de globals.css", () => {
   it("radii.control/panel coinciden con --radius-control/--radius-panel", () => {
     expect(cssVar("radius-control")).toBe(radii.control);
     expect(cssVar("radius-panel")).toBe(radii.panel);
+  });
+
+  it("radii.statCard coincide con --radius-stat-card", () => {
+    expect(cssVar("radius-stat-card")).toBe(radii.statCard);
   });
 
   it("typography.button coincide con --text-button", () => {

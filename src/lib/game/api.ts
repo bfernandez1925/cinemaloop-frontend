@@ -36,3 +36,15 @@ export function finishGame(gameId: string): Promise<FinishGameResponse> {
     "finishGame",
   )({ gameId }).then((result) => result.data);
 }
+
+function simpleCall(name: string) {
+  return (gameId: string): Promise<{ ok: true }> =>
+    httpsCallable<{ gameId: string }, { ok: true }>(
+      functions,
+      name,
+    )({ gameId }).then((result) => result.data);
+}
+
+export const submitToLeaderboard = simpleCall("submitToLeaderboard");
+export const saveGame = simpleCall("saveGame");
+export const discardGame = simpleCall("discardGame");

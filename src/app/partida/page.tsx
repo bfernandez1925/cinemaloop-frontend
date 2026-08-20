@@ -1,12 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AnswerForm } from "@/components/AnswerForm";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { DirectionIndicator } from "@/components/DirectionIndicator";
 import { GameBadges } from "@/components/GameBadges";
+import { GameOverScreen } from "@/components/GameOverScreen";
 import { NodeCard } from "@/components/NodeCard";
 import { RequireAuth } from "@/components/RequireAuth";
 import { TimerRing } from "@/components/TimerRing";
@@ -125,23 +125,10 @@ function PartidaContent() {
   }
 
   if (phase === "gameOver") {
-    return (
-      <main className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
-        <h2 className="font-display text-screen-title text-text-primary">Partida terminada</h2>
-        <p className="font-display text-score-hero text-orange">{score}</p>
-        {summary && (
-          <p className="text-body text-text-secondary">
-            {summary.nodos_alcanzados} nodos alcanzados
-          </p>
-        )}
-        <Link
-          href="/modos"
-          className="text-button bg-orange text-bg-primary rounded-control px-7 py-[15px]"
-        >
-          Volver a jugar
-        </Link>
-      </main>
-    );
+    // gameId solo falta si nunca hubo sesión activa, y en ese caso el
+    // efecto de arriba ya redirige a /modos antes de llegar aquí.
+    if (!gameId) return null;
+    return <GameOverScreen score={score} gameId={gameId} chain={chain} summary={summary} />;
   }
 
   const usedEntities = chain.filter((node) => node.tipo === expectedType);

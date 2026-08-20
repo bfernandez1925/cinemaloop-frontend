@@ -121,3 +121,101 @@ test.describe("pantalla de partida", () => {
     await page.waitForURL("/modos");
   });
 });
+
+// Comparación visual (CIN-43) contra el frame "04 · Fin de partida" del
+// handoff. submitAnswer/finishGame se interceptan a nivel de red (el
+// build de e2e no conecta el emulador de Functions, solo el de Auth —
+// ver playwright.config.ts) en vez de mockear el módulo, para ejercitar
+// el mismo camino real de PartidaContent que usa un usuario de verdad.
+async function reachGameOver(page: Page) {
+  await page.route("**/submitAnswer", (route) =>
+    route.fulfill({ json: { result: { correcto: false, puntuacion_total: 480 } } }),
+  );
+  await page.route("**/finishGame", (route) =>
+    route.fulfill({
+      json: {
+        result: {
+          puntuacion_total: 480,
+          nodos_alcanzados: 1,
+          tiempo_total: 12,
+          tiempo_medio_respuesta: 8.4,
+        },
+      },
+    }),
+  );
+  await page.goto("/partida");
+  await page.getByPlaceholder("Nombre de la película…").fill("Película que no existe");
+  await page.getByPlaceholder("Nombre de la película…").press("Enter");
+  await page.getByText("Partida terminada").waitFor();
+}
+
+test.describe("pantalla fin de partida", () => {
+  test("04 fin de partida, mobile 390px", async ({ page }) => {
+    await signUp(page, {
+      username: "Fixture 04",
+      email: `e2e-partida-04-mobile-${Date.now()}@cinemaloop.test`,
+      password: "fixture-password",
+    });
+    await page.setViewportSize({ width: 390, height: 820 });
+    await freezeClockAndInjectGame(page, ACTOR_NODE);
+    await reachGameOver(page);
+    await page.waitForFunction(() => document.fonts.status === "loaded");
+
+    await expect(page).toHaveScreenshot("partida-04-mobile.png", { animations: "disabled" });
+  });
+
+  test("04 fin de partida, desktop 1280px", async ({ page }) => {
+    await signUp(page, {
+      username: "Fixture 04",
+      email: `e2e-partida-04-desktop-${Date.now()}@cinemaloop.test`,
+      password: "fixture-password",
+    });
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await freezeClockAndInjectGame(page, ACTOR_NODE);
+    await reachGameOver(page);
+    await page.waitForFunction(() => document.fonts.status === "loaded");
+
+    await expect(page).toHaveScreenshot("partida-04-desktop.png", { animations: "disabled" });
+  });
+
+  test('"Enviar al ranking" envía la partida y deja solo "Volver a jugar"', async ({ page }) => {
+    await signUp(page, {
+      username: "Fixture ranking",
+      email: `e2e-partida-04-ranking-${Date.now()}@cinemaloop.test`,
+      password: "fixture-password",
+    });
+    await freezeClockAndInjectGame(page, ACTOR_NODE);
+    await reachGameOver(page);
+    await page.route("**/submitToLeaderboard", (route) =>
+      route.fulfill({ json: { result: { ok: true } } }),
+    );
+
+    await page.getByRole("button", { name: "Enviar al ranking" }).click();
+
+    await expect(page.getByRole("link", { name: "Volver a jugar" })).toBeVisible();
+  });
+
+  test('"Descartar" pide confirmación antes de borrar la partida', async ({ page }) => {
+    await signUp(page, {
+      username: "Fixture descartar",
+      email: `e2e-partida-04-descartar-${Date.now()}@cinemaloop.test`,
+      password: "fixture-password",
+    });
+    await freezeClockAndInjectGame(page, ACTOR_NODE);
+    await reachGameOver(page);
+    let discardCalled = false;
+    await page.route("**/discardGame", (route) => {
+      discardCalled = true;
+      return route.fulfill({ json: { result: { ok: true } } });
+    });
+
+    await page.getByRole("button", { name: "Descartar" }).click();
+    await expect(page.getByRole("dialog")).toBeVisible();
+    expect(discardCalled).toBe(false);
+
+    await page.getByRole("dialog").getByRole("button", { name: "Descartar" }).click();
+
+    await expect(page.getByRole("link", { name: "Volver a jugar" })).toBeVisible();
+    expect(discardCalled).toBe(true);
+  });
+});
