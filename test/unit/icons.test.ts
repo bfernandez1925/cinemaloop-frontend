@@ -13,6 +13,7 @@ describe("ICONS", () => {
         "close",
         "gameModes",
         "historial",
+        "lock",
         "mic",
         "modeClasico",
         "modeContrarreloj",

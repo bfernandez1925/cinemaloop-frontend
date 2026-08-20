@@ -7,6 +7,7 @@ import {
   History,
   Infinity as InfinityIcon,
   Link as LinkIcon,
+  Lock,
   Mic,
   Save,
   Search,
@@ -36,6 +37,9 @@ import {
  * `clock`/`aiCorrection`/`gameModes` (secciones "Cómo se juega"/"Por qué
  * jugar" de la landing, CIN-51) tampoco están en la spec — esas secciones
  * son contenido comercial inventado, sin frame de handoff.
+ *
+ * `lock` (chip de "ya usados" en la pantalla de partida, CIN-41) tampoco
+ * está en la tabla de la spec.
  */
 export const ICONS = {
   back: ChevronLeft,
@@ -55,6 +59,7 @@ export const ICONS = {
   clock: Clock,
   aiCorrection: Sparkles,
   gameModes: Gamepad2,
+  lock: Lock,
 } as const;
 
 export type IconName = keyof typeof ICONS;

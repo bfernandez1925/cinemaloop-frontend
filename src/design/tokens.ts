@@ -31,6 +31,10 @@ export const colors = {
   // tint; se fija el punto medio como valor concreto de ingeniería.
   orangeTintBg: "rgba(255, 90, 60, 0.15)",
   orangeTintText: "#FF9478",
+  // Badge de tipo de entidad en la pantalla de partida (screen 03a/03b):
+  // opacidad distinta (0.18) a la del pill "Popular" (0.15) — la spec
+  // documenta un rango 0.12–0.18, no un único valor para todo el sistema.
+  orangeTintBgStrong: "rgba(255, 90, 60, 0.18)",
 
   violet: "#7B3CFF",
   violetHover: "#9463FF",
@@ -41,6 +45,7 @@ export const colors = {
   // La spec da dos valores para el texto sobre tint violeta
   // ("#A78BFA / #D9CFFF"); el segundo es la variante de mayor énfasis.
   violetTintTextStrong: "#D9CFFF",
+  violetTintBgStrong: "rgba(123, 60, 255, 0.18)",
   // Superficie "cristal" de las tarjetas decorativas de vista previa de
   // cadena en Landing (surface con alpha + backdrop-filter), verificado
   // en la screen 01 de CinemaLoop.dc.html.
@@ -102,6 +107,28 @@ export const typography = {
     uppercase: true,
     letterSpacing: { min: "0.05em", max: "0.08em" },
   },
+  // Título del nodo actual en la pantalla de partida (nombre del actor/
+  // película): verificado en la screen 03a/03b.
+  nodeTitle: { mobile: "17px", desktop: "21px", weight: 600, family: "display" },
+  // Número dentro de los pills de nodos/puntuación (partida): verificado
+  // en la screen 03a/03b.
+  badgeNumber: { mobile: "19px", desktop: "22px", weight: 700, family: "display" },
+  // Label de tipo + prompt del indicador de dirección ("Actor" → "Escribe
+  // una película"): verificado en la screen 03a/03b. El peso (600 label /
+  // 700 prompt) se aplica por componente, no forma parte del token.
+  directionText: { mobile: "12px", desktop: "14px", family: "sans" },
+  // Texto de los <input> de respuesta: verificado en la screen 03a/03b.
+  inputText: { mobile: "14px", desktop: "16px", family: "sans" },
+  // Encabezado de la lista de "ya usados": verificado en la screen
+  // 03a/03b — letter-spacing .04em, distinto del .06em de `badge`.
+  sectionLabel: {
+    mobile: "11.5px",
+    desktop: "13px",
+    weight: 700,
+    family: "sans",
+    uppercase: true,
+    letterSpacing: "0.04em",
+  },
 } as const;
 
 export const radii = {
@@ -117,6 +144,9 @@ export const radii = {
   image: "26%",
   // Controles (botones, inputs): verificado en la screen 01 de CinemaLoop.dc.html.
   control: "12px",
+  // Panel (tarjeta de nodo actual, contenedor de "ya usados"): 20px flat,
+  // igual en mobile y desktop — verificado en la screen 03a/03b.
+  panel: "20px",
 } as const;
 
 /** Gaps estándar del sistema — ya cubiertos por la escala de espaciado por
