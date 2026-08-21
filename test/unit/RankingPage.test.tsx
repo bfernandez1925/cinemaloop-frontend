@@ -21,6 +21,7 @@ function entry(overrides: Partial<LeaderboardEntry> = {}): LeaderboardEntry {
   return {
     posicion: 1,
     userId: "user-1",
+    modo: "clasico",
     nombre_usuario: "Marta R.",
     puntuacion: 4820,
     nodos_alcanzados: 15,
@@ -97,7 +98,7 @@ describe("RankingPage", () => {
     fireEvent.click(cargarMas);
 
     expect(await screen.findAllByText("Página 2")).not.toHaveLength(0);
-    expect(getLeaderboard).toHaveBeenCalledWith(1);
+    expect(getLeaderboard).toHaveBeenCalledWith(1, "clasico");
   });
 
   it("si falla la carga, muestra un error", async () => {
@@ -107,6 +108,37 @@ describe("RankingPage", () => {
 
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "No se pudo cargar el ranking. Inténtalo de nuevo más tarde.",
+    );
+  });
+
+  it("por defecto consulta el modo Clásico (CIN-63)", async () => {
+    vi.mocked(getLeaderboard).mockResolvedValue({ pagina: 0, entradas: [entry()], propia: null });
+
+    render(<RankingPage />);
+
+    await screen.findByRole("heading", { name: "Ranking global" });
+    expect(getLeaderboard).toHaveBeenCalledWith(0, "clasico");
+  });
+
+  it("al cambiar de pestaña, relanza la consulta con el modo elegido sin navegar (CIN-63)", async () => {
+    vi.mocked(getLeaderboard).mockImplementation((_pagina, modo) =>
+      Promise.resolve({
+        pagina: 0,
+        entradas: [entry({ modo, nombre_usuario: `Jugador de ${modo}` })],
+        propia: null,
+      }),
+    );
+
+    render(<RankingPage />);
+    await screen.findAllByText("Jugador de clasico");
+
+    fireEvent.click(screen.getByRole("tab", { name: "Contrarreloj" }));
+
+    expect(await screen.findAllByText("Jugador de contrarreloj")).not.toHaveLength(0);
+    expect(getLeaderboard).toHaveBeenCalledWith(0, "contrarreloj");
+    expect(screen.getByRole("tab", { name: "Contrarreloj" })).toHaveAttribute(
+      "aria-selected",
+      "true",
     );
   });
 });
