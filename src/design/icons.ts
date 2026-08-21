@@ -1,5 +1,6 @@
 import {
   ArrowRight,
+  Baby,
   ChevronLeft,
   Clapperboard,
   Clock,
@@ -33,7 +34,8 @@ import {
  * `modeClasico`/`modeContrarreloj`/`modeMaraton` (screen "Selección de
  * modo", CIN-39) no están en la tabla de spec-design-fidelity.md — son
  * glifos propios del handoff sin fila dedicada; se eligen los Lucide más
- * cercanos semánticamente (reloj, rayo, infinito).
+ * cercanos semánticamente (reloj, rayo, infinito). `modeInfantil`
+ * (CIN-54) tampoco está — no hay frame de handoff para este modo.
  *
  * `clock`/`aiCorrection`/`gameModes` (secciones "Cómo se juega"/"Por qué
  * jugar" de la landing, CIN-51) tampoco están en la spec — esas secciones
@@ -60,6 +62,7 @@ export const ICONS = {
   modeClasico: Clock,
   modeContrarreloj: Zap,
   modeMaraton: InfinityIcon,
+  modeInfantil: Baby,
   clock: Clock,
   aiCorrection: Sparkles,
   gameModes: Gamepad2,

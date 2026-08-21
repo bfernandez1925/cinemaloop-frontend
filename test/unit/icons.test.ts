@@ -18,6 +18,7 @@ describe("ICONS", () => {
         "mic",
         "modeClasico",
         "modeContrarreloj",
+        "modeInfantil",
         "modeMaraton",
         "movie",
         "nodeCount",
