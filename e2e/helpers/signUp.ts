@@ -10,6 +10,13 @@ export async function signUp(
   page: Page,
   { username, email, password }: { username: string; email: string; password: string },
 ) {
+  // El registro llama a updateUsername (Cloud Function, CIN-64) tras
+  // crear la cuenta. Solo el Auth Emulator está levantado en e2e (ver
+  // playwright.config.ts) — sin este mock, la llamada real a
+  // cinemaloop-platform rechazaría el token del emulador y bloquearía
+  // la navegación a /modos que depende de que el registro complete.
+  await page.route("**/updateUsername", (route) => route.fulfill({ json: { result: null } }));
+
   await page.goto("/");
   // Desde CIN-51 la landing tiene el botón "Crear cuenta" tanto en el
   // hero como en la banda de CTA final — el primero basta para abrir el modal.
@@ -18,7 +25,10 @@ export async function signUp(
   const dialog = page.getByRole("dialog");
   await dialog.getByLabel("Nombre de usuario").fill(username);
   await dialog.getByLabel("Email").fill(email);
-  await dialog.getByLabel("Contraseña").fill(password);
+  // exact: true — "Contraseña" es también substring del aria-label del
+  // botón de mostrar/ocultar contraseña (CIN-65), getByLabel por
+  // defecto haría match parcial de ambos.
+  await dialog.getByLabel("Contraseña", { exact: true }).fill(password);
   await dialog.getByRole("button", { name: "Crear cuenta" }).click();
 
   await page.waitForURL("/modos");
