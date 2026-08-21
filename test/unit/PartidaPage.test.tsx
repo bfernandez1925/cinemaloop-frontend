@@ -189,4 +189,75 @@ describe("PartidaPage", () => {
       expect(clearActiveGameSession).toHaveBeenCalledOnce();
     });
   });
+
+  describe("confirmación manual de ambigüedad (CIN-23)", () => {
+    const candidatos = [
+      { tipo: "pelicula" as const, entidad_tmdb_id: 400, nombre: "Candidato A", imagen: null },
+      { tipo: "pelicula" as const, entidad_tmdb_id: 401, nombre: "Candidato B", imagen: null },
+    ];
+
+    it("respuesta ambigua: muestra el diálogo con los candidatos y no termina la partida", async () => {
+      vi.mocked(submitAnswer).mockResolvedValue({ ambiguo: true, candidatos });
+
+      render(<PartidaPage />);
+      fireEvent.change(screen.getByPlaceholderText("Nombre de la película…"), {
+        target: { value: "Ambigua" },
+      });
+      fireEvent.submit(screen.getByPlaceholderText("Nombre de la película…").closest("form")!);
+
+      expect(await screen.findByRole("dialog")).toBeInTheDocument();
+      expect(screen.getByText("Candidato A")).toBeInTheDocument();
+      expect(screen.getByText("Candidato B")).toBeInTheDocument();
+      expect(screen.queryByText("Partida terminada")).not.toBeInTheDocument();
+    });
+
+    it("elegir un candidato reenvía submitAnswer con el mismo tiempo de respuesta y el candidato_id elegido", async () => {
+      vi.mocked(submitAnswer).mockResolvedValueOnce({ ambiguo: true, candidatos });
+      vi.mocked(submitAnswer).mockResolvedValueOnce({
+        correcto: true,
+        nodoActual: candidatos[1]!,
+        puntos: 130,
+        puntuacion_total: 130,
+      });
+
+      render(<PartidaPage />);
+      fireEvent.change(screen.getByPlaceholderText("Nombre de la película…"), {
+        target: { value: "Ambigua" },
+      });
+      fireEvent.submit(screen.getByPlaceholderText("Nombre de la película…").closest("form")!);
+      await screen.findByRole("dialog");
+
+      fireEvent.click(screen.getByText("Candidato B"));
+
+      expect(await screen.findByText("130")).toBeInTheDocument();
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      expect(submitAnswer).toHaveBeenCalledTimes(2);
+      const [, , , candidatoId] = vi.mocked(submitAnswer).mock.calls[1]!;
+      expect(candidatoId).toBe(401);
+      // El tiempo de respuesta es el mismo en ambas llamadas: no penaliza
+      // el tiempo que tarda el jugador en elegir entre los candidatos.
+      const tiempoOriginal = vi.mocked(submitAnswer).mock.calls[0]![2];
+      const tiempoConfirmacion = vi.mocked(submitAnswer).mock.calls[1]![2];
+      expect(tiempoConfirmacion).toBe(tiempoOriginal);
+    });
+
+    it("si la confirmación falla por red, muestra un error y mantiene el diálogo abierto", async () => {
+      vi.mocked(submitAnswer).mockResolvedValueOnce({ ambiguo: true, candidatos });
+      vi.mocked(submitAnswer).mockRejectedValueOnce(new Error("network"));
+
+      render(<PartidaPage />);
+      fireEvent.change(screen.getByPlaceholderText("Nombre de la película…"), {
+        target: { value: "Ambigua" },
+      });
+      fireEvent.submit(screen.getByPlaceholderText("Nombre de la película…").closest("form")!);
+      await screen.findByRole("dialog");
+
+      fireEvent.click(screen.getByText("Candidato A"));
+
+      expect(await screen.findByRole("alert")).toHaveTextContent(
+        "No se pudo comprobar la respuesta. Inténtalo de nuevo.",
+      );
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
+    });
+  });
 });
