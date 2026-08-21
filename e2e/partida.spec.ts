@@ -120,6 +120,22 @@ test.describe("pantalla de partida", () => {
 
     await page.waitForURL("/modos");
   });
+
+  // CIN-37: en un navegador real con Web Speech API (Chromium la expone,
+  // aunque no en todos los navegadores — spec-voice-input.md), el botón
+  // de micrófono se muestra habilitado, no como "próximamente".
+  test("con soporte de Web Speech API, el botón de micrófono está habilitado", async ({ page }) => {
+    await signUp(page, {
+      username: "Fixture voz",
+      email: `e2e-partida-voz-${Date.now()}@cinemaloop.test`,
+      password: "fixture-password",
+    });
+    await freezeClockAndInjectGame(page, ACTOR_NODE);
+    await page.goto("/partida");
+    await page.getByText("Willem Dafoe").waitFor();
+
+    await expect(page.getByRole("button", { name: "Responder por voz" })).toBeEnabled();
+  });
 });
 
 // Comparación visual (CIN-43) contra el frame "04 · Fin de partida" del
