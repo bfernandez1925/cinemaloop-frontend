@@ -23,7 +23,7 @@ export function ChainVisualization({ chain }: { chain: GameNode[] }) {
   const layout = computeChainLayout(chain.length);
 
   return (
-    <div>
+    <div className="w-full">
       <span className="text-section-label lg:text-section-label-lg text-text-muted uppercase">
         Cadena completa · {chain.length} {chain.length === 1 ? "nodo" : "nodos"}
       </span>
