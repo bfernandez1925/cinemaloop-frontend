@@ -44,6 +44,15 @@ const MODES: Array<{
       desktop: "Cadena infinita: termina solo cuando fallas o repites un nodo.",
     },
   },
+  {
+    key: "infantil",
+    title: "Infantil",
+    icon: ICONS.modeInfantil,
+    description: {
+      mobile: "Actores y películas familiares, sin límite de cadena.",
+      desktop: "Actores y películas familiares y de animación, sin límite de cadena.",
+    },
+  },
 ];
 
 export function ModeGrid() {
@@ -67,7 +76,7 @@ export function ModeGrid() {
   return (
     <div>
       {/* Entrada escalonada de las tarjetas al montar (CIN-52). */}
-      <div className="cl-animate-stagger flex flex-col gap-[14px] lg:grid lg:grid-cols-3 lg:gap-6">
+      <div className="cl-animate-stagger flex flex-col gap-[14px] lg:grid lg:grid-cols-2 lg:gap-6">
         {MODES.map(({ key, ...mode }) => (
           <ModeCard
             key={key}
