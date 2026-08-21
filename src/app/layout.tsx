@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { EB_Garamond, Inter_Tight } from "next/font/google";
 import { AuthProvider } from "@/lib/auth/AuthProvider";
 import "./globals.css";
@@ -21,6 +21,14 @@ const interTight = Inter_Tight({
 export const metadata: Metadata = {
   title: "Cinemaloop",
   description: "Encadena actores y películas contra reloj. Llega lo más lejos posible.",
+};
+
+// Sin esto, Next.js App Router no inyecta ningún <meta name="viewport">
+// por defecto: Safari en iOS asume el ancho de escritorio (~980px) y
+// escala toda la página, forzando al usuario a hacer zoom-out a mano.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
