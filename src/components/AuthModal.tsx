@@ -8,6 +8,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { ICONS } from "@/design/icons";
 import { auth } from "@/lib/firebase";
+import { updateUsername } from "@/lib/auth/api";
 import { getAuthErrorMessage } from "@/lib/auth/authErrors";
 
 type AuthMode = "login" | "signup";
@@ -27,8 +28,10 @@ export function AuthModal({
   const [username, setUsername] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
   const emailInputRef = useRef<HTMLInputElement>(null);
   const CloseIcon = ICONS.close;
+  const PasswordVisibilityIcon = showPassword ? ICONS.hidePassword : ICONS.showPassword;
 
   useEffect(() => {
     emailInputRef.current?.focus();
@@ -50,6 +53,10 @@ export function AuthModal({
       if (mode === "signup") {
         const credential = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(credential.user, { displayName: username });
+        // Escritura explícita en Firestore (CIN-64): el trigger
+        // onUserCreated puede correr antes o después de updateProfile,
+        // así que no basta con fijar el displayName en Auth.
+        await updateUsername(username);
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
@@ -111,18 +118,36 @@ export function AuthModal({
             />
           </label>
 
-          <label className="flex flex-col gap-1.5">
-            <span className="text-text-secondary text-sm">Contraseña</span>
-            <input
-              type="password"
-              required
-              minLength={6}
-              autoComplete={mode === "login" ? "current-password" : "new-password"}
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              className="border-border bg-bg-primary text-text-primary rounded-control border px-4 py-3 text-sm"
-            />
-          </label>
+          <div className="flex flex-col gap-1.5">
+            {/* htmlFor/id explícitos, no <label> envolviendo el campo: si el
+                <label> envolviera también el botón de mostrar/ocultar, el
+                nombre accesible del input arrastraría el aria-label del
+                botón ("Contraseña Mostrar contraseña"), rompiendo cualquier
+                localizador exacto por "Contraseña" (incluido en los tests). */}
+            <label htmlFor="auth-modal-password" className="text-text-secondary text-sm">
+              Contraseña
+            </label>
+            <div className="relative">
+              <input
+                id="auth-modal-password"
+                type={showPassword ? "text" : "password"}
+                required
+                minLength={6}
+                autoComplete={mode === "login" ? "current-password" : "new-password"}
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                className="border-border bg-bg-primary text-text-primary rounded-control w-full border px-4 py-3 pr-11 text-sm"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                className="text-text-secondary absolute inset-y-0 right-0 flex items-center px-3"
+              >
+                <PasswordVisibilityIcon className="h-4 w-4" strokeWidth={1.8} />
+              </button>
+            </div>
+          </div>
 
           {errorMessage && (
             <p role="alert" className="text-orange-tint-text text-sm">
