@@ -91,6 +91,10 @@ export function AuthModal({
           {mode === "login" ? "Iniciar sesión" : "Crear cuenta"}
         </h2>
 
+        {/* text-[16px] en los 3 inputs, no text-sm (14px): Safari en iOS
+            hace zoom automático al enfocar cualquier campo con font-size
+            por debajo de 16px, y ese zoom se queda pegado tras cerrar el
+            modal (CIN-68). */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {mode === "signup" && (
             <label className="flex flex-col gap-1.5">
@@ -100,7 +104,7 @@ export function AuthModal({
                 required
                 value={username}
                 onChange={(event) => setUsername(event.target.value)}
-                className="border-border bg-bg-primary text-text-primary rounded-control border px-4 py-3 text-sm"
+                className="border-border bg-bg-primary text-text-primary rounded-control border px-4 py-3 text-[16px]"
               />
             </label>
           )}
@@ -114,7 +118,7 @@ export function AuthModal({
               autoComplete="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              className="border-border bg-bg-primary text-text-primary rounded-control border px-4 py-3 text-sm"
+              className="border-border bg-bg-primary text-text-primary rounded-control border px-4 py-3 text-[16px]"
             />
           </label>
 
@@ -136,7 +140,7 @@ export function AuthModal({
                 autoComplete={mode === "login" ? "current-password" : "new-password"}
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
-                className="border-border bg-bg-primary text-text-primary rounded-control w-full border px-4 py-3 pr-11 text-sm"
+                className="border-border bg-bg-primary text-text-primary rounded-control w-full border px-4 py-3 pr-11 text-[16px]"
               />
               <button
                 type="button"
