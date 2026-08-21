@@ -8,6 +8,7 @@ import {
   Infinity as InfinityIcon,
   Link as LinkIcon,
   Lock,
+  LogOut,
   Mic,
   Save,
   Search,
@@ -40,6 +41,9 @@ import {
  *
  * `lock` (chip de "ya usados" en la pantalla de partida, CIN-41) tampoco
  * está en la tabla de la spec.
+ *
+ * `logout` (cerrar sesión en la cabecera, CIN-59) tampoco está en la
+ * tabla de la spec — no hay frame de handoff para esta acción.
  */
 export const ICONS = {
   back: ChevronLeft,
@@ -60,6 +64,7 @@ export const ICONS = {
   aiCorrection: Sparkles,
   gameModes: Gamepad2,
   lock: Lock,
+  logout: LogOut,
 } as const;
 
 export type IconName = keyof typeof ICONS;
