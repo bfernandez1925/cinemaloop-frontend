@@ -242,7 +242,10 @@ function PartidaContent() {
           <div className="hidden lg:block">
             <TimerRing remainingSeconds={remainingSeconds} totalSeconds={TURN_TIME_LIMIT_SECONDS} />
           </div>
-          <NodeCard node={currentNode} />
+          {/* key fuerza el remount en cada nodo nuevo, para que la
+              animación de entrada (CIN-52) se repita en cada turno
+              superado en vez de solo la primera vez. */}
+          <NodeCard key={currentNode.entidad_tmdb_id} node={currentNode} />
         </div>
 
         <div className="flex flex-col gap-4 lg:gap-6">

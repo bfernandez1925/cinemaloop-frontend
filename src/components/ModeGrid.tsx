@@ -61,7 +61,8 @@ export function ModeGrid() {
 
   return (
     <div>
-      <div className="flex flex-col gap-[14px] lg:grid lg:grid-cols-3 lg:gap-6">
+      {/* Entrada escalonada de las 3 tarjetas al montar (CIN-52). */}
+      <div className="cl-animate-stagger flex flex-col gap-[14px] lg:grid lg:grid-cols-3 lg:gap-6">
         {MODES.map(({ key, variant, ...mode }) => (
           <ModeCard
             key={key}
