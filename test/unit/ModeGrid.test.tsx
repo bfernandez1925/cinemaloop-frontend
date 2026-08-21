@@ -89,10 +89,30 @@ describe("ModeGrid", () => {
     expect(await screen.findByText("Un momento…")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /contrarreloj/i })).toBeDisabled();
     expect(screen.getByRole("button", { name: /maratón/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /infantil/i })).toBeDisabled();
 
     resolveStart({
       gameId: "game-3",
       nodoActual: { tipo: "actor", entidad_tmdb_id: 1, nombre: "X", imagen: null },
+    });
+  });
+
+  it("Infantil también es jugable (CIN-54), guardando el modo correcto en la sesión", async () => {
+    const nodoActual = {
+      tipo: "pelicula" as const,
+      entidad_tmdb_id: 99,
+      nombre: "Una película familiar",
+      imagen: null,
+    };
+    vi.mocked(startGame).mockResolvedValue({ gameId: "game-4", nodoActual });
+
+    render(<ModeGrid />);
+    fireEvent.click(screen.getByRole("button", { name: /infantil/i }));
+
+    await waitFor(() => expect(pushMock).toHaveBeenCalledWith("/partida"));
+    expect(startGame).toHaveBeenCalledWith("infantil");
+    expect(JSON.parse(sessionStorage.getItem(ACTIVE_GAME_SESSION_KEY)!)).toMatchObject({
+      modo: "infantil",
     });
   });
 });
