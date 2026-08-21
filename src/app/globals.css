@@ -177,3 +177,98 @@ body {
     transform: translate(0, 0) scale(1);
   }
 }
+
+/* Animaciones y micro-interacciones (CIN-52) — sin frame de handoff
+   detrás (el handoff es estático), pensadas con criterio propio para
+   que la experiencia se sienta fluida. Todas viven dentro de
+   `prefers-reduced-motion: no-preference`: con el sistema pidiendo
+   menos movimiento, el contenido aparece directamente sin animar en
+   vez de forzar una animación reducida — más simple y más respetuoso
+   que reescalar duraciones. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes cl-fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Entrada del nodo actual en la pantalla de partida (CIN-41): un
+     nodo nuevo = turno superado, así que además de la entrada lleva un
+     resplandor breve del color de su propio tipo (violeta=actor,
+     naranja=película) a modo de micro-feedback de acierto. */
+  @keyframes cl-node-enter-violet {
+    from {
+      opacity: 0;
+      transform: translateY(10px) scale(0.97);
+      box-shadow: 0 0 0 6px var(--color-violet-halo);
+    }
+    60% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    to {
+      box-shadow: 0 0 0 0 transparent;
+    }
+  }
+  @keyframes cl-node-enter-orange {
+    from {
+      opacity: 0;
+      transform: translateY(10px) scale(0.97);
+      box-shadow: 0 0 0 6px var(--color-orange-halo);
+    }
+    60% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    to {
+      box-shadow: 0 0 0 0 transparent;
+    }
+  }
+
+  .cl-animate-fade-in-up {
+    animation: cl-fade-in-up 0.4s ease-out both;
+  }
+  .cl-animate-node-enter-violet {
+    animation: cl-node-enter-violet 0.6s ease-out both;
+  }
+  .cl-animate-node-enter-orange {
+    animation: cl-node-enter-orange 0.6s ease-out both;
+  }
+
+  /* Entrada escalonada de tarjetas (Selección de modo, Landing): cada
+     hijo directo se anima con un pequeño retraso creciente, hasta 6
+     hijos — más que eso ya no aporta y solo alarga la espera. */
+  .cl-animate-stagger > * {
+    animation: cl-fade-in-up 0.4s ease-out both;
+  }
+  .cl-animate-stagger > *:nth-child(1) {
+    animation-delay: 0ms;
+  }
+  .cl-animate-stagger > *:nth-child(2) {
+    animation-delay: 70ms;
+  }
+  .cl-animate-stagger > *:nth-child(3) {
+    animation-delay: 140ms;
+  }
+  .cl-animate-stagger > *:nth-child(4) {
+    animation-delay: 210ms;
+  }
+  .cl-animate-stagger > *:nth-child(5) {
+    animation-delay: 280ms;
+  }
+  .cl-animate-stagger > *:nth-child(6) {
+    animation-delay: 350ms;
+  }
+
+  /* Anillo del temporizador (CIN-40): ya interpola stroke-dashoffset en
+     cada tick (200ms) — esta transición solo suaviza el salto entre
+     ticks discretos, no sustituye la interpolación real. */
+  .cl-timer-progress {
+    transition: stroke-dashoffset 180ms linear;
+  }
+}

@@ -49,7 +49,7 @@ export function TimerRing({ remainingSeconds, totalSeconds }: TimerRingProps) {
           strokeLinecap="round"
           strokeDasharray={CIRCUMFERENCE}
           strokeDashoffset={dashoffset}
-          className={colorClass}
+          className={`cl-timer-progress ${colorClass}`}
         />
       </svg>
       <div

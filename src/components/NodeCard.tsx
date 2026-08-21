@@ -22,8 +22,18 @@ export function NodeCard({ node }: { node: GameNode }) {
       ? [node.pais_origen, node.anio_nacimiento].filter(Boolean).join(" · ")
       : null;
 
+  // Entrada + resplandor breve del color del propio tipo (CIN-52):
+  // comunica "turno superado" sin depender de un estado adicional — se
+  // repite en cada nodo nuevo porque quien lo usa monta un NodeCard con
+  // key={node.entidad_tmdb_id} distinto por nodo (ver partida/page.tsx).
+  const enterAnimationClass = isActor
+    ? "cl-animate-node-enter-violet"
+    : "cl-animate-node-enter-orange";
+
   return (
-    <div className="bg-surface border-border rounded-panel flex w-full flex-col items-center gap-3.5 border p-[18px] lg:gap-[14px] lg:p-7">
+    <div
+      className={`bg-surface border-border rounded-panel flex w-full flex-col items-center gap-3.5 border p-[18px] lg:gap-[14px] lg:p-7 ${enterAnimationClass}`}
+    >
       <span
         className={`text-badge flex items-center gap-1.5 self-start rounded-pill px-[11px] py-[5px] uppercase ${
           isActor
