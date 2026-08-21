@@ -39,13 +39,14 @@ type Phase = "loading" | "playing" | "checking" | "ambiguous" | "gameOver";
 // como para el timeout de partida completa (Contrarreloj, CIN-62).
 const TIMEOUT_ANSWER = "(tiempo agotado)";
 
-// Config del temporizador por modo (CIN-62): Clásico cuenta por turno
-// (se resetea en cada respuesta), Contrarreloj cuenta la partida
-// completa (nunca se resetea), Maratón no tiene temporizador visible —
-// el guard de inactividad del servidor (5 min) es una red de seguridad
-// silenciosa, no una cuenta atrás que deba verse.
+// Config del temporizador por modo (CIN-62/CIN-54): Clásico e Infantil
+// cuentan por turno (se resetea en cada respuesta — Infantil comparte
+// toda la mecánica de Clásico, solo cambia el pool), Contrarreloj cuenta
+// la partida completa (nunca se resetea), Maratón no tiene temporizador
+// visible — el guard de inactividad del servidor (5 min) es una red de
+// seguridad silenciosa, no una cuenta atrás que deba verse.
 function getTimerTotalSeconds(modo: GameMode): number | null {
-  if (modo === "clasico") return TURN_TIME_LIMIT_SECONDS;
+  if (modo === "clasico" || modo === "infantil") return TURN_TIME_LIMIT_SECONDS;
   if (modo === "contrarreloj") return CONTRARRELOJ_TOTAL_TIME_LIMIT_SECONDS;
   return null;
 }

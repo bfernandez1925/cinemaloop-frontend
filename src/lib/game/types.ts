@@ -27,7 +27,7 @@ export function isActorNode(node: GameNode): node is ActorNode {
   return node.tipo === "actor";
 }
 
-export type GameMode = "clasico" | "contrarreloj" | "maraton";
+export type GameMode = "clasico" | "contrarreloj" | "maraton" | "infantil";
 
 export interface StartGameResponse {
   gameId: string;
