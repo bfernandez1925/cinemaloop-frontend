@@ -7,6 +7,7 @@ function entry(overrides: Partial<LeaderboardEntry> = {}): LeaderboardEntry {
   return {
     posicion: 4,
     userId: "user-1",
+    modo: "clasico",
     nombre_usuario: "Iván C.",
     puntuacion: 4260,
     nodos_alcanzados: 13,
