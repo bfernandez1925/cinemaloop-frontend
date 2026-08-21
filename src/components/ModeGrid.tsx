@@ -5,14 +5,21 @@ import { useState } from "react";
 import { ModeCard } from "@/components/ModeCard";
 import { ICONS } from "@/design/icons";
 import { startGame } from "@/lib/game/api";
+import type { GameMode } from "@/lib/game/types";
 import { ACTIVE_GAME_SESSION_KEY } from "@/lib/game/session";
 
-const MODES = [
+const MODES: Array<{
+  key: GameMode;
+  title: string;
+  icon: (typeof ICONS)[keyof typeof ICONS];
+  badge?: string;
+  description: { mobile: string; desktop: string };
+}> = [
   {
     key: "clasico",
     title: "Clásico",
     icon: ICONS.modeClasico,
-    variant: "primary" as const,
+    badge: "Popular",
     description: {
       mobile: "Cronómetro por respuesta, sin límite de cadena.",
       desktop: "Cronómetro por respuesta, sin límite de cadena. Ideal para empezar.",
@@ -22,7 +29,6 @@ const MODES = [
     key: "contrarreloj",
     title: "Contrarreloj",
     icon: ICONS.modeContrarreloj,
-    variant: "comingSoon" as const,
     description: {
       mobile: "90 segundos totales para encadenar nodos.",
       desktop:
@@ -33,7 +39,6 @@ const MODES = [
     key: "maraton",
     title: "Maratón",
     icon: ICONS.modeMaraton,
-    variant: "comingSoon" as const,
     description: {
       mobile: "Cadena infinita hasta el primer fallo.",
       desktop: "Cadena infinita: termina solo cuando fallas o repites un nodo.",
@@ -43,33 +48,34 @@ const MODES = [
 
 export function ModeGrid() {
   const router = useRouter();
-  const [starting, setStarting] = useState(false);
+  const [startingMode, setStartingMode] = useState<GameMode | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  async function handleStartClasico() {
-    setStarting(true);
+  async function handleStartMode(modo: GameMode) {
+    setStartingMode(modo);
     setErrorMessage(null);
     try {
-      const { gameId, nodoActual } = await startGame("clasico");
-      sessionStorage.setItem(ACTIVE_GAME_SESSION_KEY, JSON.stringify({ gameId, nodoActual }));
+      const { gameId, nodoActual } = await startGame(modo);
+      sessionStorage.setItem(ACTIVE_GAME_SESSION_KEY, JSON.stringify({ gameId, modo, nodoActual }));
       router.push("/partida");
     } catch {
       setErrorMessage("No se pudo iniciar la partida. Inténtalo de nuevo.");
-      setStarting(false);
+      setStartingMode(null);
     }
   }
 
   return (
     <div>
-      {/* Entrada escalonada de las 3 tarjetas al montar (CIN-52). */}
+      {/* Entrada escalonada de las tarjetas al montar (CIN-52). */}
       <div className="cl-animate-stagger flex flex-col gap-[14px] lg:grid lg:grid-cols-3 lg:gap-6">
-        {MODES.map(({ key, variant, ...mode }) => (
+        {MODES.map(({ key, ...mode }) => (
           <ModeCard
             key={key}
-            variant={variant}
+            variant="primary"
             {...mode}
-            onClick={variant === "primary" ? handleStartClasico : undefined}
-            loading={variant === "primary" && starting}
+            onClick={() => void handleStartMode(key)}
+            loading={startingMode === key}
+            disabled={startingMode !== null && startingMode !== key}
           />
         ))}
       </div>

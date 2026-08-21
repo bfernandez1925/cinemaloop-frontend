@@ -6,13 +6,14 @@ import { ICONS } from "@/design/icons";
 const description = { mobile: "Copy mobile.", desktop: "Copy desktop." };
 
 describe("ModeCard", () => {
-  it("la variante primary está habilitada y muestra la insignia Popular", () => {
+  it("la variante primary está habilitada y muestra el badge indicado", () => {
     render(
       <ModeCard
         icon={ICONS.modeClasico}
         title="Clásico"
         description={description}
         variant="primary"
+        badge="Popular"
       />,
     );
 
@@ -20,6 +21,36 @@ describe("ModeCard", () => {
     expect(button).toBeEnabled();
     expect(screen.getByText("Popular")).toBeInTheDocument();
     expect(screen.queryByText("Próximamente")).not.toBeInTheDocument();
+  });
+
+  it("la variante primary sin badge no muestra ningún pill (CIN-62: Contrarreloj/Maratón sin badge propio)", () => {
+    render(
+      <ModeCard
+        icon={ICONS.modeContrarreloj}
+        title="Contrarreloj"
+        description={description}
+        variant="primary"
+      />,
+    );
+
+    expect(screen.queryByText("Popular")).not.toBeInTheDocument();
+    expect(screen.queryByText("Próximamente")).not.toBeInTheDocument();
+  });
+
+  it("con disabled (otra tarjeta cargando), se deshabilita sin cambiar el badge", () => {
+    render(
+      <ModeCard
+        icon={ICONS.modeClasico}
+        title="Clásico"
+        description={description}
+        variant="primary"
+        badge="Popular"
+        disabled
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: /clásico/i })).toBeDisabled();
+    expect(screen.getByText("Popular")).toBeInTheDocument();
   });
 
   it("la variante comingSoon está deshabilitada y muestra la insignia Próximamente", () => {
@@ -77,6 +108,7 @@ describe("ModeCard", () => {
         title="Clásico"
         description={description}
         variant="primary"
+        badge="Popular"
         loading
       />,
     );

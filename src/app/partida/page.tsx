@@ -16,22 +16,41 @@ import { ICONS } from "@/design/icons";
 import { finishGame, submitAnswer } from "@/lib/game/api";
 import type {
   FinishGameResponse,
+  GameMode,
   GameNode,
   NodeType,
   PoolEntity,
   SubmitAnswerResponse,
 } from "@/lib/game/types";
-import { TURN_TIME_LIMIT_SECONDS, useTurnTimer } from "@/lib/game/useTurnTimer";
+import {
+  CONTRARRELOJ_TOTAL_TIME_LIMIT_SECONDS,
+  TURN_TIME_LIMIT_SECONDS,
+  useTurnTimer,
+} from "@/lib/game/useTurnTimer";
 import { clearActiveGameSession, readActiveGameSession } from "@/lib/game/session";
 
 type Phase = "loading" | "playing" | "checking" | "ambiguous" | "gameOver";
 
-// Se envía cuando se acaba el tiempo del turno sin nada válido escrito
-// (submitAnswer no acepta una respuesta vacía) — un texto que en la
-// práctica nunca encaja con TMDb, así que el turno se resuelve como
-// incorrecto por el mismo camino ya existente en el servidor, sin
-// duplicar aquí su lógica de fin de partida.
+// Se envía cuando se acaba el tiempo sin nada válido escrito (submitAnswer
+// no acepta una respuesta vacía) — un texto que en la práctica nunca
+// encaja con TMDb, así que el turno se resuelve como incorrecto por el
+// mismo camino ya existente en el servidor, sin duplicar aquí su lógica
+// de fin de partida. Se usa tanto para el timeout por turno (Clásico)
+// como para el timeout de partida completa (Contrarreloj, CIN-62).
 const TIMEOUT_ANSWER = "(tiempo agotado)";
+
+// Config del temporizador por modo (CIN-62): Clásico cuenta por turno
+// (se resetea en cada respuesta), Contrarreloj cuenta la partida
+// completa (nunca se resetea), Maratón no tiene temporizador visible —
+// el guard de inactividad del servidor (5 min) es una red de seguridad
+// silenciosa, no una cuenta atrás que deba verse.
+function getTimerTotalSeconds(modo: GameMode): number | null {
+  if (modo === "clasico") return TURN_TIME_LIMIT_SECONDS;
+  if (modo === "contrarreloj") return CONTRARRELOJ_TOTAL_TIME_LIMIT_SECONDS;
+  return null;
+}
+
+const INACTIVITY_ERROR_MESSAGE = "La partida se cerró por inactividad.";
 
 function PartidaContent() {
   const router = useRouter();
@@ -40,12 +59,17 @@ function PartidaContent() {
   // justo al montar — solo la redirección cuando falta necesita efecto.
   const [session] = useState(() => readActiveGameSession());
   const [gameId] = useState(() => session?.gameId ?? null);
+  const [modo] = useState<GameMode>(() => session?.modo ?? "clasico");
   const [chain, setChain] = useState<GameNode[]>(() => (session ? [session.nodoActual] : []));
   const [score, setScore] = useState(0);
   const [phase, setPhase] = useState<Phase>(() => (session ? "playing" : "loading"));
   const [turnStartedAt, setTurnStartedAt] = useState<number | null>(() =>
     session ? Date.now() : null,
   );
+  // A diferencia de turnStartedAt, nunca se reinicia entre turnos — es
+  // la referencia del temporizador de partida completa en Contrarreloj
+  // (CIN-62). Mismo instante que turnStartedAt en el primer turno.
+  const [gameStartedAt] = useState<number | null>(() => (session ? Date.now() : null));
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [summary, setSummary] = useState<FinishGameResponse | null>(null);
   const [confirmingQuit, setConfirmingQuit] = useState(false);
@@ -69,7 +93,20 @@ function PartidaContent() {
       ? "pelicula"
       : "actor"
     : null;
-  const remainingSeconds = useTurnTimer(phase === "playing" ? turnStartedAt : null);
+  // Dos relojes independientes: turnRemainingSeconds (se resetea cada
+  // turno, siempre calculado — es la base real de tiempo_respuesta_segundos
+  // sin importar el modo) y gameRemainingSeconds (nunca se resetea, solo
+  // relevante para el temporizador visual de partida completa de
+  // Contrarreloj). Cuál se muestra depende del modo (CIN-62).
+  const turnRemainingSeconds = useTurnTimer(
+    phase === "playing" && modo !== "maraton" ? turnStartedAt : null,
+  );
+  const gameRemainingSeconds = useTurnTimer(
+    phase === "playing" && modo === "contrarreloj" ? gameStartedAt : null,
+    CONTRARRELOJ_TOTAL_TIME_LIMIT_SECONDS,
+  );
+  const timerTotalSeconds = getTimerTotalSeconds(modo);
+  const remainingSeconds = modo === "contrarreloj" ? gameRemainingSeconds : turnRemainingSeconds;
 
   const endGame = useCallback(async (finalScore: number, activeGameId: string) => {
     setScore(finalScore);
@@ -117,7 +154,12 @@ function PartidaContent() {
       if (!gameId || !currentNode || phase !== "playing") return;
       setPhase("checking");
       setErrorMessage(null);
-      const tiempoRespuestaSegundos = Math.max(0, TURN_TIME_LIMIT_SECONDS - remainingSeconds);
+      // Tiempo real del turno actual, no derivado de qué reloj se
+      // muestra (que en Contrarreloj es el de partida completa, no el
+      // de turno) — válido igual en cualquier modo.
+      const tiempoRespuestaSegundos = turnStartedAt
+        ? Math.max(0, (Date.now() - turnStartedAt) / 1000)
+        : 0;
 
       try {
         const result = await submitAnswer(gameId, respuesta, tiempoRespuestaSegundos);
@@ -128,12 +170,20 @@ function PartidaContent() {
           return;
         }
         await applyResolvedResult(result, gameId);
-      } catch {
+      } catch (error) {
+        // La partida de Maratón puede haberse cerrado server-side por
+        // inactividad (CIN-62) sin que el frontend lo supiera todavía —
+        // distinto de un fallo de red genérico: la partida ya terminó,
+        // seguir en "playing" dejaría al jugador escribiendo en vano.
+        if (error instanceof Error && error.message.includes(INACTIVITY_ERROR_MESSAGE)) {
+          await endGame(score, gameId);
+          return;
+        }
         setErrorMessage("No se pudo comprobar la respuesta. Inténtalo de nuevo.");
         setPhase("playing");
       }
     },
-    [gameId, currentNode, phase, remainingSeconds, applyResolvedResult],
+    [gameId, currentNode, phase, turnStartedAt, applyResolvedResult, endGame, score],
   );
 
   // El diálogo de ambigüedad permanece visible (con los botones
@@ -172,11 +222,19 @@ function PartidaContent() {
   }
 
   useEffect(() => {
-    if (phase === "playing" && remainingSeconds <= 0 && !timedOutRef.current) {
+    // Maratón no tiene temporizador (timerTotalSeconds === null): nunca
+    // se auto-envía un timeout por tiempo, solo el guard de inactividad
+    // silencioso del servidor puede cerrar la partida.
+    if (
+      phase === "playing" &&
+      timerTotalSeconds !== null &&
+      remainingSeconds <= 0 &&
+      !timedOutRef.current
+    ) {
       timedOutRef.current = true;
       void handleAnswer(TIMEOUT_ANSWER);
     }
-  }, [phase, remainingSeconds, handleAnswer]);
+  }, [phase, timerTotalSeconds, remainingSeconds, handleAnswer]);
 
   if (phase === "loading" || !currentNode || !expectedType) {
     return (
@@ -233,15 +291,19 @@ function PartidaContent() {
         />
       )}
 
-      <div className="flex flex-col items-center gap-2 lg:hidden">
-        <TimerRing remainingSeconds={remainingSeconds} totalSeconds={TURN_TIME_LIMIT_SECONDS} />
-      </div>
+      {timerTotalSeconds !== null && (
+        <div className="flex flex-col items-center gap-2 lg:hidden">
+          <TimerRing remainingSeconds={remainingSeconds} totalSeconds={timerTotalSeconds} />
+        </div>
+      )}
 
       <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[340px_1fr] lg:items-start lg:gap-14">
         <div className="flex flex-col items-center gap-5">
-          <div className="hidden lg:block">
-            <TimerRing remainingSeconds={remainingSeconds} totalSeconds={TURN_TIME_LIMIT_SECONDS} />
-          </div>
+          {timerTotalSeconds !== null && (
+            <div className="hidden lg:block">
+              <TimerRing remainingSeconds={remainingSeconds} totalSeconds={timerTotalSeconds} />
+            </div>
+          )}
           {/* key fuerza el remount en cada nodo nuevo, para que la
               animación de entrada (CIN-52) se repita en cada turno
               superado en vez de solo la primera vez. */}
