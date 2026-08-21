@@ -7,12 +7,17 @@ import {
 } from "firebase/auth";
 import { describe, expect, it, vi } from "vitest";
 import { AuthModal } from "@/components/AuthModal";
+import { updateUsername } from "@/lib/auth/api";
 
 vi.mock("firebase/auth", () => ({
   createUserWithEmailAndPassword: vi.fn(),
   signInWithEmailAndPassword: vi.fn(),
   updateProfile: vi.fn(),
   getAuth: vi.fn(() => ({})),
+}));
+
+vi.mock("@/lib/auth/api", () => ({
+  updateUsername: vi.fn(),
 }));
 
 function fillAndSubmit({ username }: { username?: string } = {}) {
@@ -54,6 +59,21 @@ describe("AuthModal", () => {
     expect(updateProfile).toHaveBeenCalledWith({ uid: "user-1" }, { displayName: "borja" });
   });
 
+  it("modo signup: llama a updateUsername tras updateProfile, para no depender de la carrera con onUserCreated (CIN-64)", async () => {
+    vi.mocked(createUserWithEmailAndPassword).mockResolvedValue({
+      user: { uid: "user-1" },
+    } as never);
+    vi.mocked(updateProfile).mockResolvedValue(undefined as never);
+    vi.mocked(updateUsername).mockResolvedValue(undefined);
+    const onSuccess = vi.fn();
+
+    render(<AuthModal initialMode="signup" onClose={vi.fn()} onSuccess={onSuccess} />);
+    fillAndSubmit({ username: "borja" });
+
+    await vi.waitFor(() => expect(onSuccess).toHaveBeenCalled());
+    expect(updateUsername).toHaveBeenCalledWith("borja");
+  });
+
   it("muestra el mensaje de error mapeado cuando Firebase Auth rechaza el login", async () => {
     vi.mocked(signInWithEmailAndPassword).mockRejectedValue(
       new FirebaseError("auth/invalid-credential", "interno"),
@@ -76,6 +96,19 @@ describe("AuthModal", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "Ya existe una cuenta con ese email.",
     );
+  });
+
+  it("el botón de ojo alterna la visibilidad de la contraseña (CIN-65)", () => {
+    render(<AuthModal initialMode="login" onClose={vi.fn()} onSuccess={vi.fn()} />);
+
+    const passwordInput = screen.getByLabelText("Contraseña");
+    expect(passwordInput).toHaveAttribute("type", "password");
+
+    fireEvent.click(screen.getByRole("button", { name: "Mostrar contraseña" }));
+    expect(passwordInput).toHaveAttribute("type", "text");
+
+    fireEvent.click(screen.getByRole("button", { name: "Ocultar contraseña" }));
+    expect(passwordInput).toHaveAttribute("type", "password");
   });
 
   it("alterna entre login y signup y llama a onClose al pulsar la X", () => {
