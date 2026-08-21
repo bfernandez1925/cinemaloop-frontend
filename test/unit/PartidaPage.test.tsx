@@ -1,6 +1,6 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import type { User } from "firebase/auth";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import PartidaPage from "@/app/partida/page";
 import { finishGame, submitAnswer } from "@/lib/game/api";
 import type { SubmitAnswerResponse } from "@/lib/game/types";
@@ -50,7 +50,11 @@ describe("PartidaPage", () => {
     vi.mocked(submitAnswer).mockReset();
     vi.mocked(finishGame).mockReset();
     vi.mocked(clearActiveGameSession).mockReset();
-    vi.mocked(readActiveGameSession).mockReturnValue({ gameId: "game-1", nodoActual: actorNode });
+    vi.mocked(readActiveGameSession).mockReturnValue({
+      gameId: "game-1",
+      modo: "clasico",
+      nodoActual: actorNode,
+    });
   });
 
   it("sin sesión activa, redirige a /modos y no muestra la partida", () => {
@@ -259,5 +263,103 @@ describe("PartidaPage", () => {
       );
       expect(screen.getByRole("dialog")).toBeInTheDocument();
     });
+  });
+
+  describe("temporizador por modo (CIN-62)", () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it("Contrarreloj: el temporizador es de partida completa (90s) y no se resetea entre turnos", async () => {
+      vi.mocked(readActiveGameSession).mockReturnValue({
+        gameId: "game-1",
+        modo: "contrarreloj",
+        nodoActual: actorNode,
+      });
+      vi.mocked(submitAnswer).mockResolvedValue({
+        correcto: true,
+        nodoActual: movieNode,
+        puntos: 100,
+        puntuacion_total: 100,
+      });
+
+      render(<PartidaPage />);
+      // Mobile y desktop renderizan cada uno su propio TimerRing
+      // (ocultos entre sí solo por CSS, ambos presentes en el DOM) —
+      // basta con comprobar el primero, están sincronizados.
+      expect(screen.getAllByRole("timer")[0]).toHaveAccessibleName("90 segundos restantes");
+
+      await act(async () => {
+        vi.advanceTimersByTime(10_000);
+      });
+      expect(screen.getAllByRole("timer")[0]).toHaveAccessibleName("80 segundos restantes");
+
+      fireEvent.change(screen.getByPlaceholderText("Nombre de la película…"), {
+        target: { value: "The Lighthouse" },
+      });
+      await act(async () => {
+        fireEvent.submit(screen.getByPlaceholderText("Nombre de la película…").closest("form")!);
+      });
+      // findByText (con su polling real vía waitFor) se queda colgado
+      // bajo fake timers — tras el act async de arriba, la actualización
+      // ya se ha aplicado, así que basta con una comprobación síncrona.
+      expect(screen.getByText("The Lighthouse")).toBeInTheDocument();
+
+      // Si se hubiera reseteado como el timer por turno de Clásico,
+      // volvería a mostrar 90 (o cerca) tras el turno superado — en vez
+      // de eso, sigue contando la partida completa desde donde iba.
+      await act(async () => {
+        vi.advanceTimersByTime(10_000);
+      });
+      expect(screen.getAllByRole("timer")[0]).toHaveAccessibleName("70 segundos restantes");
+    });
+
+    it("Maratón: no muestra ningún temporizador y no se auto-envía timeout aunque pase mucho tiempo", async () => {
+      vi.mocked(readActiveGameSession).mockReturnValue({
+        gameId: "game-1",
+        modo: "maraton",
+        nodoActual: actorNode,
+      });
+
+      render(<PartidaPage />);
+      expect(screen.queryByRole("timer")).not.toBeInTheDocument();
+
+      await act(async () => {
+        vi.advanceTimersByTime(40_000);
+      });
+
+      // 40s supera el límite de turno de Clásico/Contrarreloj (25s) —
+      // en Maratón no debe disparar ningún envío automático.
+      expect(submitAnswer).not.toHaveBeenCalled();
+      expect(screen.getByPlaceholderText("Nombre de la película…")).toBeInTheDocument();
+    });
+  });
+
+  it("Maratón: si el servidor cerró la partida por inactividad, termina la partida en vez de mostrar el error genérico", async () => {
+    vi.mocked(readActiveGameSession).mockReturnValue({
+      gameId: "game-1",
+      modo: "maraton",
+      nodoActual: actorNode,
+    });
+    vi.mocked(submitAnswer).mockRejectedValue(new Error("La partida se cerró por inactividad."));
+    vi.mocked(finishGame).mockResolvedValue({
+      puntuacion_total: 0,
+      nodos_alcanzados: 0,
+      tiempo_total: 0,
+      tiempo_medio_respuesta: 0,
+    });
+
+    render(<PartidaPage />);
+    fireEvent.change(screen.getByPlaceholderText("Nombre de la película…"), {
+      target: { value: "The Lighthouse" },
+    });
+    fireEvent.submit(screen.getByPlaceholderText("Nombre de la película…").closest("form")!);
+
+    expect(await screen.findByText("Partida terminada")).toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 });

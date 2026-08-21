@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ModeGrid } from "@/components/ModeGrid";
 import { startGame } from "@/lib/game/api";
+import type { StartGameResponse } from "@/lib/game/types";
 import { ACTIVE_GAME_SESSION_KEY } from "@/lib/game/session";
 
 const pushMock = vi.fn();
@@ -38,6 +39,7 @@ describe("ModeGrid", () => {
     expect(startGame).toHaveBeenCalledWith("clasico");
     expect(JSON.parse(sessionStorage.getItem(ACTIVE_GAME_SESSION_KEY)!)).toEqual({
       gameId: "game-1",
+      modo: "clasico",
       nodoActual,
     });
   });
@@ -54,12 +56,43 @@ describe("ModeGrid", () => {
     expect(pushMock).not.toHaveBeenCalled();
   });
 
-  it("Contrarreloj y Maratón siguen deshabilitados, sin disparar startGame", () => {
+  it("Contrarreloj y Maratón también son jugables (CIN-62), guardando el modo correcto en la sesión", async () => {
+    const nodoActual = {
+      tipo: "pelicula" as const,
+      entidad_tmdb_id: 55,
+      nombre: "Una película",
+      imagen: null,
+    };
+    vi.mocked(startGame).mockResolvedValue({ gameId: "game-2", nodoActual });
+
     render(<ModeGrid />);
-
     fireEvent.click(screen.getByRole("button", { name: /contrarreloj/i }));
-    fireEvent.click(screen.getByRole("button", { name: /maratón/i }));
 
-    expect(startGame).not.toHaveBeenCalled();
+    await waitFor(() => expect(pushMock).toHaveBeenCalledWith("/partida"));
+    expect(startGame).toHaveBeenCalledWith("contrarreloj");
+    expect(JSON.parse(sessionStorage.getItem(ACTIVE_GAME_SESSION_KEY)!)).toMatchObject({
+      modo: "contrarreloj",
+    });
+  });
+
+  it("mientras una tarjeta está iniciando partida, las demás quedan deshabilitadas", async () => {
+    let resolveStart!: (value: StartGameResponse) => void;
+    vi.mocked(startGame).mockReturnValue(
+      new Promise((resolve) => {
+        resolveStart = resolve;
+      }),
+    );
+
+    render(<ModeGrid />);
+    fireEvent.click(screen.getByRole("button", { name: /clásico/i }));
+
+    expect(await screen.findByText("Un momento…")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /contrarreloj/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /maratón/i })).toBeDisabled();
+
+    resolveStart({
+      gameId: "game-3",
+      nodoActual: { tipo: "actor", entidad_tmdb_id: 1, nombre: "X", imagen: null },
+    });
   });
 });

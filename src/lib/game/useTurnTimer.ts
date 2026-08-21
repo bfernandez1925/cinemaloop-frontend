@@ -8,6 +8,13 @@ import { useEffect, useState } from "react";
 // startGame/submitAnswer) — nunca inventa su propia duración.
 export const TURN_TIME_LIMIT_SECONDS = 25;
 
+// Límite de partida completa del modo Contrarreloj (CIN-62) — mismo
+// valor que CONTRARRELOJ_TOTAL_TIME_LIMIT_SECONDS en cinemaloop-backend.
+// A diferencia del límite de turno, no se resetea entre respuestas: el
+// mismo hook cuenta hacia atrás desde el inicio de la partida, no del
+// turno actual.
+export const CONTRARRELOJ_TOTAL_TIME_LIMIT_SECONDS = 90;
+
 /** Segundos restantes del turno actual, recalculados cada 200ms a partir
  * de `turnStartedAt` (epoch ms) — null mientras no hay turno activo. */
 export function useTurnTimer(
