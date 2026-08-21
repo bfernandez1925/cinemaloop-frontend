@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { AmbiguityDialog } from "@/components/AmbiguityDialog";
 import { AnswerForm } from "@/components/AnswerForm";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { DirectionIndicator } from "@/components/DirectionIndicator";
@@ -13,11 +14,17 @@ import { TimerRing } from "@/components/TimerRing";
 import { UsedEntitiesList } from "@/components/UsedEntitiesList";
 import { ICONS } from "@/design/icons";
 import { finishGame, submitAnswer } from "@/lib/game/api";
-import type { FinishGameResponse, GameNode, NodeType } from "@/lib/game/types";
+import type {
+  FinishGameResponse,
+  GameNode,
+  NodeType,
+  PoolEntity,
+  SubmitAnswerResponse,
+} from "@/lib/game/types";
 import { TURN_TIME_LIMIT_SECONDS, useTurnTimer } from "@/lib/game/useTurnTimer";
 import { clearActiveGameSession, readActiveGameSession } from "@/lib/game/session";
 
-type Phase = "loading" | "playing" | "checking" | "gameOver";
+type Phase = "loading" | "playing" | "checking" | "ambiguous" | "gameOver";
 
 // Se envía cuando se acaba el tiempo del turno sin nada válido escrito
 // (submitAnswer no acepta una respuesta vacía) — un texto que en la
@@ -43,6 +50,13 @@ function PartidaContent() {
   const [summary, setSummary] = useState<FinishGameResponse | null>(null);
   const [confirmingQuit, setConfirmingQuit] = useState(false);
   const [quitting, setQuitting] = useState(false);
+  const [ambiguousCandidates, setAmbiguousCandidates] = useState<PoolEntity[] | null>(null);
+  // Se reenvía tal cual al confirmar un candidato ambiguo (CIN-23): el
+  // tiempo de respuesta ya transcurrió en el envío original, no debe
+  // penalizar al jugador por el tiempo que tarde en elegir.
+  const pendingAnswerRef = useRef<{ respuesta: string; tiempoRespuestaSegundos: number } | null>(
+    null,
+  );
   const timedOutRef = useRef(false);
 
   useEffect(() => {
@@ -71,6 +85,33 @@ function PartidaContent() {
     }
   }, []);
 
+  // Camino común a una respuesta resuelta (directa o tras confirmar un
+  // candidato ambiguo, CIN-23): avanza la cadena o termina la partida.
+  // El servidor nunca devuelve `ambiguo` para una respuesta ya resuelta
+  // (ni la primera vez que no hay ambigüedad real, ni tras confirmar un
+  // candidato_id) — de ahí el `throw` defensivo, nunca esperado en la práctica.
+  const applyResolvedResult = useCallback(
+    async (result: SubmitAnswerResponse, activeGameId: string) => {
+      if ("ambiguo" in result) {
+        throw new Error("Respuesta ambigua inesperada tras resolver el turno.");
+      }
+      if (!result.correcto) {
+        await endGame(result.puntuacion_total, activeGameId);
+        return;
+      }
+      setChain((prev) => [...prev, result.nodoActual]);
+      setScore(result.puntuacion_total);
+      if (result.partida_finalizada) {
+        await endGame(result.puntuacion_total, activeGameId);
+        return;
+      }
+      timedOutRef.current = false;
+      setTurnStartedAt(Date.now());
+      setPhase("playing");
+    },
+    [endGame],
+  );
+
   const handleAnswer = useCallback(
     async (respuesta: string) => {
       if (!gameId || !currentNode || phase !== "playing") return;
@@ -80,25 +121,46 @@ function PartidaContent() {
 
       try {
         const result = await submitAnswer(gameId, respuesta, tiempoRespuestaSegundos);
-        if (!result.correcto) {
-          await endGame(result.puntuacion_total, gameId);
+        if ("ambiguo" in result && result.ambiguo) {
+          pendingAnswerRef.current = { respuesta, tiempoRespuestaSegundos };
+          setAmbiguousCandidates(result.candidatos);
+          setPhase("ambiguous");
           return;
         }
-        setChain((prev) => [...prev, result.nodoActual]);
-        setScore(result.puntuacion_total);
-        if (result.partida_finalizada) {
-          await endGame(result.puntuacion_total, gameId);
-          return;
-        }
-        timedOutRef.current = false;
-        setTurnStartedAt(Date.now());
-        setPhase("playing");
+        await applyResolvedResult(result, gameId);
       } catch {
         setErrorMessage("No se pudo comprobar la respuesta. Inténtalo de nuevo.");
         setPhase("playing");
       }
     },
-    [gameId, currentNode, phase, remainingSeconds, endGame],
+    [gameId, currentNode, phase, remainingSeconds, applyResolvedResult],
+  );
+
+  // El diálogo de ambigüedad permanece visible (con los botones
+  // deshabilitados vía `selecting`) mientras se confirma — solo se
+  // cierra al resolver con éxito, ver más abajo.
+  const handleSelectCandidate = useCallback(
+    async (candidato: PoolEntity) => {
+      const pending = pendingAnswerRef.current;
+      if (!gameId || !pending) return;
+      setPhase("checking");
+      setErrorMessage(null);
+
+      try {
+        const result = await submitAnswer(
+          gameId,
+          pending.respuesta,
+          pending.tiempoRespuestaSegundos,
+          candidato.entidad_tmdb_id,
+        );
+        await applyResolvedResult(result, gameId);
+        setAmbiguousCandidates(null);
+      } catch {
+        setErrorMessage("No se pudo comprobar la respuesta. Inténtalo de nuevo.");
+        setPhase("ambiguous");
+      }
+    },
+    [gameId, applyResolvedResult],
   );
 
   async function handleQuit() {
@@ -159,6 +221,15 @@ function PartidaContent() {
           confirming={quitting}
           onConfirm={() => void handleQuit()}
           onClose={() => setConfirmingQuit(false)}
+        />
+      )}
+
+      {ambiguousCandidates && (
+        <AmbiguityDialog
+          expectedType={expectedType}
+          candidatos={ambiguousCandidates}
+          selecting={phase === "checking"}
+          onSelect={(candidato) => void handleSelectCandidate(candidato)}
         />
       )}
 

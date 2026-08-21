@@ -14,20 +14,32 @@ export function startGame(modo: GameMode): Promise<StartGameResponse> {
   )({ modo }).then((result) => result.data);
 }
 
+/** `candidatoId` confirma un candidato ambiguo devuelto por una llamada
+ * previa (CIN-23) — el servidor lo revalida igual que un candidato
+ * normal, nunca se confía en él a ciegas. */
 export function submitAnswer(
   gameId: string,
   respuesta: string,
   tiempoRespuestaSegundos: number,
+  candidatoId?: number,
 ): Promise<SubmitAnswerResponse> {
   return httpsCallable<
-    { gameId: string; respuesta: string; tiempo_respuesta_segundos: number },
+    {
+      gameId: string;
+      respuesta: string;
+      tiempo_respuesta_segundos: number;
+      candidato_id?: number;
+    },
     SubmitAnswerResponse
   >(
     functions,
     "submitAnswer",
-  )({ gameId, respuesta, tiempo_respuesta_segundos: tiempoRespuestaSegundos }).then(
-    (result) => result.data,
-  );
+  )({
+    gameId,
+    respuesta,
+    tiempo_respuesta_segundos: tiempoRespuestaSegundos,
+    ...(candidatoId !== undefined ? { candidato_id: candidatoId } : {}),
+  }).then((result) => result.data);
 }
 
 export function finishGame(gameId: string): Promise<FinishGameResponse> {

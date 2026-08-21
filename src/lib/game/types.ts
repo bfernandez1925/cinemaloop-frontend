@@ -36,6 +36,7 @@ export interface StartGameResponse {
 
 export type SubmitAnswerResponse =
   | { correcto: false; puntuacion_total: number }
+  | { ambiguo: true; candidatos: PoolEntity[] }
   | {
       correcto: true;
       nodoActual: GameNode;
