@@ -4,6 +4,8 @@ import {
   ChevronLeft,
   Clapperboard,
   Clock,
+  Eye,
+  EyeOff,
   Gamepad2,
   History,
   Infinity as InfinityIcon,
@@ -46,6 +48,10 @@ import {
  *
  * `logout` (cerrar sesión en la cabecera, CIN-59) tampoco está en la
  * tabla de la spec — no hay frame de handoff para esta acción.
+ *
+ * `showPassword`/`hidePassword` (botón de mostrar/ocultar contraseña
+ * en el login/registro, CIN-65) tampoco están en la spec — no hay
+ * frame de handoff para el formulario de autenticación.
  */
 export const ICONS = {
   back: ChevronLeft,
@@ -68,6 +74,8 @@ export const ICONS = {
   gameModes: Gamepad2,
   lock: Lock,
   logout: LogOut,
+  showPassword: Eye,
+  hidePassword: EyeOff,
 } as const;
 
 export type IconName = keyof typeof ICONS;

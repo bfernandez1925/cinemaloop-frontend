@@ -12,6 +12,7 @@ describe("ICONS", () => {
         "clock",
         "close",
         "gameModes",
+        "hidePassword",
         "historial",
         "lock",
         "logout",
@@ -25,6 +26,7 @@ describe("ICONS", () => {
         "ranking",
         "save",
         "search",
+        "showPassword",
       ].sort(),
     );
   });
