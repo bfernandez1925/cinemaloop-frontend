@@ -24,6 +24,7 @@ async function mockLeaderboard(page: Page, ownUserId: string | null) {
   const entradas = NAMES.map((nombre, i) => ({
     posicion: i + 1,
     userId: nombre === "Tú" && ownUserId ? ownUserId : `u${i}`,
+    modo: "clasico",
     nombre_usuario: nombre,
     puntuacion: SCORES[i],
     nodos_alcanzados: CHAINS[i],
@@ -101,6 +102,7 @@ test.describe("pantalla Ranking global", () => {
             entradas: NAMES.map((nombre, i) => ({
               posicion: i + 1,
               userId: `u${i}`,
+              modo: "clasico",
               nombre_usuario: nombre,
               puntuacion: SCORES[i],
               nodos_alcanzados: CHAINS[i],
@@ -111,6 +113,7 @@ test.describe("pantalla Ranking global", () => {
             propia: {
               posicion: 87,
               userId: "e2e-own-user-not-in-page",
+              modo: "clasico",
               nombre_usuario: "Yo",
               puntuacion: 900,
               nodos_alcanzados: 4,
@@ -127,6 +130,60 @@ test.describe("pantalla Ranking global", () => {
 
     await expect(page.getByText("Tu posición")).toBeVisible();
     await expect(page.getByText("Yo").first()).toBeVisible();
+  });
+
+  test("cambiar de pestaña relanza la consulta con el modo elegido, sin navegar (CIN-63)", async ({
+    page,
+  }) => {
+    await signUp(page, {
+      username: "Fixture pestañas",
+      email: `e2e-ranking-tabs-${Date.now()}@cinemaloop.test`,
+      password: "fixture-password",
+    });
+
+    const modosVistos: string[] = [];
+    await page.route("**/getLeaderboard", (route) => {
+      const modo = (route.request().postDataJSON() as { data?: { modo?: string } })?.data?.modo;
+      if (modo) modosVistos.push(modo);
+      const entradas =
+        modo === "contrarreloj"
+          ? [
+              {
+                posicion: 1,
+                userId: "u-cr",
+                modo: "contrarreloj",
+                nombre_usuario: "Jugador Contrarreloj",
+                puntuacion: 500,
+                nodos_alcanzados: 5,
+                tiempo_medio_respuesta: 2,
+                tiempo_total: 10,
+                fecha: "2026-08-18T00:00:00.000Z",
+              },
+            ]
+          : [
+              {
+                posicion: 1,
+                userId: "u-cl",
+                modo: "clasico",
+                nombre_usuario: "Jugador Clásico",
+                puntuacion: 300,
+                nodos_alcanzados: 3,
+                tiempo_medio_respuesta: 4,
+                tiempo_total: 12,
+                fecha: "2026-08-18T00:00:00.000Z",
+              },
+            ];
+      return route.fulfill({ json: { result: { pagina: 0, entradas, propia: null } } });
+    });
+
+    await page.goto("/ranking");
+    await page.getByText("Jugador Clásico").first().waitFor({ state: "attached" });
+
+    await page.getByRole("tab", { name: "Contrarreloj" }).click();
+
+    await page.getByText("Jugador Contrarreloj").first().waitFor({ state: "attached" });
+    expect(page.url()).toContain("/ranking");
+    expect(modosVistos).toEqual(["clasico", "contrarreloj"]);
   });
 
   test("el botón de volver lleva a /inicio", async ({ page }) => {
