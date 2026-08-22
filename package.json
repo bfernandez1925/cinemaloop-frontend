@@ -6,27 +6,43 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "build:e2e": "NEXT_PUBLIC_USE_FIREBASE_AUTH_EMULATOR=true next build",
+    "start": "serve out",
     "lint": "eslint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "typecheck": "tsc --noEmit"
+    "pretypecheck": "next typegen",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "postinstall": "playwright install --with-deps chromium"
   },
   "dependencies": {
+    "firebase": "^12.18.0",
+    "lucide-react": "^1.33.0",
     "next": "16.3.1",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "^4",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.2",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^6.0.5",
     "eslint": "^9",
     "eslint-config-next": "16.3.1",
     "eslint-config-prettier": "^10.1.8",
+    "firebase-tools": "^14.27.0",
+    "jsdom": "^29.1.1",
     "prettier": "^3.9.6",
+    "serve": "^14.2.6",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.11"
   }
 }
